@@ -3,7 +3,19 @@ package backend.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_users_email",
+                        columnNames = "email"
+                ),
+                @UniqueConstraint(
+                        name = "uk_users_phone",
+                        columnNames = "phone"
+                )
+        }
+)
 public class User {
 
     @Id

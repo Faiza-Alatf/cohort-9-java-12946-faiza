@@ -32,11 +32,12 @@ public class AuthController {
 
         User user = authService.register(request);
 
-        String token = jwtService.generateToken(
-                request.getEmail() != null
-                        ? request.getEmail()
-                        : request.getPhone()
-        );
+        // Generate JWT using the persisted user's identifier
+        String identifier = user.getEmail() != null
+                ? user.getEmail()
+                : user.getPhone();
+
+        String token = jwtService.generateToken(identifier);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -50,9 +51,12 @@ public class AuthController {
 
         User user = authService.login(request);
 
-        String token = jwtService.generateToken(
-                request.getIdentifier()
-        );
+        // Generate JWT using the persisted user's identifier
+        String identifier = user.getEmail() != null
+                ? user.getEmail()
+                : user.getPhone();
+
+        String token = jwtService.generateToken(identifier);
 
         return ResponseEntity.ok(
                 toAuthResponse(user, token)

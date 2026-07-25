@@ -1,5 +1,6 @@
 package backend.security;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,7 +43,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         // Check if Authorization header exists
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null
+                || !authHeader.startsWith("Bearer ")) {
+
             filterChain.doFilter(request, response);
             return;
         }
@@ -52,31 +55,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
 
-            // Validate JWT token
-            if (jwtService.isTokenValid(token)) {
+            // Parse and validate token only once
+            Claims claims = jwtService.getClaims(token);
 
-                String identifier =
-                        jwtService.extractIdentifier(token);
+            // Extract identifier from parsed claims
+            String identifier =
+                    jwtService.extractIdentifier(claims);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                identifier,
-                                null,
-                                Collections.emptyList()
-                        );
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            identifier,
+                            null,
+                            Collections.emptyList()
+                    );
 
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource()
+                            .buildDetails(request)
+            );
 
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(authentication);
-            }
+            SecurityContextHolder
+                    .getContext()
+                    .setAuthentication(authentication);
 
         } catch (Exception e) {
 
+            // Clear authentication for invalid or expired token
             SecurityContextHolder.clearContext();
         }
 
