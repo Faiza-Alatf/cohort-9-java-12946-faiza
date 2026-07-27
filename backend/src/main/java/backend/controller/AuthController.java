@@ -1,6 +1,7 @@
 package backend.controller;
 
 import backend.dto.AuthResponse;
+import backend.dto.ChangePasswordRequest;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
 import backend.entity.User;
@@ -19,8 +20,10 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
 
-    public AuthController(AuthService authService,
-                          JwtService jwtService) {
+    public AuthController(
+            AuthService authService,
+            JwtService jwtService) {
+
         this.authService = authService;
         this.jwtService = jwtService;
     }
@@ -32,7 +35,6 @@ public class AuthController {
 
         User user = authService.register(request);
 
-        // Generate JWT using the persisted user's identifier
         String identifier = user.getEmail() != null
                 ? user.getEmail()
                 : user.getPhone();
@@ -51,7 +53,6 @@ public class AuthController {
 
         User user = authService.login(request);
 
-        // Generate JWT using the persisted user's identifier
         String identifier = user.getEmail() != null
                 ? user.getEmail()
                 : user.getPhone();
@@ -61,6 +62,21 @@ public class AuthController {
         return ResponseEntity.ok(
                 toAuthResponse(user, token)
         );
+    }
+
+    // Change Password API
+    // Requires a valid JWT token
+    @PutMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            java.security.Principal principal) {
+
+        authService.changePassword(
+                principal.getName(),
+                request
+        );
+
+        return ResponseEntity.noContent().build();
     }
 
     private AuthResponse toAuthResponse(

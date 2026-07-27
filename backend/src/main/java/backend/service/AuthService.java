@@ -1,5 +1,6 @@
 package backend.service;
 
+import backend.dto.ChangePasswordRequest;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
 import backend.entity.User;
@@ -16,8 +17,10 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
+    public AuthService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -68,7 +71,6 @@ public class AuthService {
 
         } catch (DataIntegrityViolationException ex) {
 
-            // Re-throw the original exception.
             // Database-specific handling is done centrally
             // in GlobalExceptionHandler.
             throw ex;
@@ -115,6 +117,47 @@ public class AuthService {
         }
 
         return user;
+    }
+
+    // Change Password
+    public void changePassword(
+            String userEmail,
+            ChangePasswordRequest request) {
+
+        // Find currently authenticated user
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new InvalidCredentialsException(
+                        "Authenticated user not found"
+                ));
+
+        // Verify current password
+        if (!passwordEncoder.matches(
+                request.getCurrentPassword(),
+                user.getPassword())) {
+
+            throw new InvalidCredentialsException(
+                    "Current password is incorrect"
+            );
+        }
+
+        // Prevent using the same password again
+        if (passwordEncoder.matches(
+                request.getNewPassword(),
+                user.getPassword())) {
+
+            throw new IllegalArgumentException(
+                    "New password must be different from current password"
+            );
+        }
+
+        // Encode and save new password
+        user.setPassword(
+                passwordEncoder.encode(
+                        request.getNewPassword()
+                )
+        );
+
+        userRepository.save(user);
     }
 
     // Normalize email
