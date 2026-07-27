@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -32,6 +33,7 @@ function Profile() {
     setError("");
     setSuccess("");
 
+    // Check if new password and confirm password match
     if (formData.newPassword !== formData.confirmPassword) {
       setError("New password and confirm password do not match.");
       return;
@@ -56,17 +58,14 @@ function Profile() {
       setShowPasswordForm(false);
 
     } catch (err) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        navigate("/login");
-        return;
-      }
-
+      // Show backend exception message
+      // Do not logout on 401 because wrong current password
+      // also returns 401 from the backend
       setError(
         err.response?.data?.error ||
         "Unable to change password."
       );
+
     } finally {
       setLoading(false);
     }
@@ -110,6 +109,7 @@ function Profile() {
         <div className="profile-card">
 
           <div className="profile-header">
+
             <div className="profile-avatar">
               {user?.firstName?.charAt(0)?.toUpperCase()}
             </div>
@@ -123,14 +123,17 @@ function Profile() {
                 Contact Management User
               </p>
             </div>
+
           </div>
 
+          {/* Error message */}
           {error && (
             <div className="error-message">
               {error}
             </div>
           )}
 
+          {/* Success message */}
           {success && (
             <div className="success-message">
               {success}
@@ -178,7 +181,11 @@ function Profile() {
           {!showPasswordForm && (
             <button
               className="auth-button"
-              onClick={() => setShowPasswordForm(true)}
+              onClick={() => {
+                setShowPasswordForm(true);
+                setError("");
+                setSuccess("");
+              }}
             >
               Change Password
             </button>
@@ -192,6 +199,7 @@ function Profile() {
               <form onSubmit={handleChangePassword}>
 
                 <div className="form-group">
+
                   <label>Current Password</label>
 
                   <input
@@ -201,9 +209,11 @@ function Profile() {
                     onChange={handleChange}
                     required
                   />
+
                 </div>
 
                 <div className="form-group">
+
                   <label>New Password</label>
 
                   <input
@@ -213,9 +223,11 @@ function Profile() {
                     onChange={handleChange}
                     required
                   />
+
                 </div>
 
                 <div className="form-group">
+
                   <label>Confirm New Password</label>
 
                   <input
@@ -225,6 +237,7 @@ function Profile() {
                     onChange={handleChange}
                     required
                   />
+
                 </div>
 
                 <div className="form-actions">
@@ -234,6 +247,7 @@ function Profile() {
                     onClick={() => {
                       setShowPasswordForm(false);
                       setError("");
+                      setSuccess("");
                     }}
                   >
                     Cancel

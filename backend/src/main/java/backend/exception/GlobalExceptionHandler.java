@@ -1,5 +1,7 @@
 package backend.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +15,15 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     // Contact or User not found
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleResourceNotFound(
             ResourceNotFoundException ex) {
+
+        log.warn("Resource not found: {}", ex.getMessage());
 
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
@@ -31,6 +38,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUnauthorized(
             UnauthorizedException ex) {
 
+        log.warn("Unauthorized access attempt: {}", ex.getMessage());
+
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
 
@@ -44,11 +53,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDuplicateResource(
             DuplicateResourceException ex) {
 
+        log.warn("Duplicate resource detected: {}", ex.getMessage());
+
         Map<String, String> response = new HashMap<>();
-        response.put(
-                "error",
-                "Email or phone number is already registered"
-        );
+        response.put("error", ex.getMessage());
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
@@ -60,6 +68,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
             DataIntegrityViolationException ex) {
 
+        log.error(
+                "Database integrity violation occurred",
+                ex
+        );
+
         Map<String, String> response = new HashMap<>();
 
         String message = ex.getMostSpecificCause()
@@ -70,7 +83,7 @@ public class GlobalExceptionHandler {
 
             response.put(
                     "error",
-                    "Email or phone number is already registered"
+                    "Email is already registered"
             );
 
             return ResponseEntity
@@ -83,7 +96,7 @@ public class GlobalExceptionHandler {
 
             response.put(
                     "error",
-                    "Email or phone number is already registered"
+                    "Phone number is already registered"
             );
 
             return ResponseEntity
@@ -106,10 +119,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleInvalidCredentials(
             InvalidCredentialsException ex) {
 
+        log.warn(
+                "Authentication failure: {}",
+                ex.getMessage()
+        );
+
         Map<String, String> response = new HashMap<>();
         response.put(
                 "error",
-                "Invalid email/phone or password"
+                ex.getMessage()
         );
 
         return ResponseEntity
@@ -122,28 +140,38 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleValidationException(
             MethodArgumentNotValidException ex) {
 
-        Map<String, String> response = new HashMap<>();
-
-        ex.getBindingResult()
+        String validationMessage = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .findFirst()
-                .ifPresent(error ->
-                        response.put(
-                                "error",
-                                error.getDefaultMessage()
-                        )
-                );
+                .map(error -> error.getDefaultMessage())
+                .orElse("Invalid request data");
+
+        log.warn(
+                "Request validation failed: {}",
+                validationMessage
+        );
+
+        Map<String, String> response = new HashMap<>();
+        response.put(
+                "error",
+                validationMessage
+        );
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
     }
 
-    // Invalid registration request
+    // Invalid registration or request arguments
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(
             IllegalArgumentException ex) {
+
+        log.warn(
+                "Invalid request argument: {}",
+                ex.getMessage()
+        );
 
         Map<String, String> response = new HashMap<>();
         response.put(
@@ -160,6 +188,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneralException(
             Exception ex) {
+
+        log.error(
+                "Unexpected application error occurred",
+                ex
+        );
 
         Map<String, String> response = new HashMap<>();
         response.put(
