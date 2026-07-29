@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -29,16 +30,34 @@ function AddContact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // DEBUG LOG 1: Check if Save Contact button triggers submit
+    console.log("SAVE CONTACT BUTTON CLICKED");
+
+    // DEBUG LOG 2: Check form data
+    console.log("FORM DATA:", formData);
+
     setError("");
     setLoading(true);
 
     try {
-      await api.post("/contacts", formData);
+      // DEBUG LOG 3: Check if POST request is being sent
+      console.log("SENDING POST REQUEST TO /api/contacts...");
+
+      const response = await api.post("/contacts", formData);
+
+      // DEBUG LOG 4: Check successful response
+      console.log("CONTACT CREATED SUCCESSFULLY:", response.data);
 
       // Contact successfully created
       navigate("/dashboard");
 
     } catch (err) {
+      // DEBUG LOG 5: Check error
+      console.error("CREATE CONTACT ERROR:", err);
+
+      console.error("ERROR RESPONSE:", err.response?.data);
+      console.error("ERROR STATUS:", err.response?.status);
+
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -212,3 +231,4 @@ function AddContact() {
 }
 
 export default AddContact;
+

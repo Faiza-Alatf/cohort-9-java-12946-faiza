@@ -1,9 +1,12 @@
+
 package backend.controller;
 
 import backend.dto.ContactRequest;
 import backend.dto.ContactResponse;
 import backend.service.ContactService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +21,9 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:3000")
 public class ContactController {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(ContactController.class);
+
     private final ContactService contactService;
 
     public ContactController(ContactService contactService) {
@@ -30,10 +36,23 @@ public class ContactController {
             @Valid @RequestBody ContactRequest request,
             Authentication authentication) {
 
+        // Temporary console log for debugging
+        System.out.println("🔥🔥🔥 POST /api/contacts HIT 🔥🔥🔥");
+
+        log.info("Create contact API request received");
+
         String userEmail = authentication.getName();
+
+        System.out.println("🔥 User: " + userEmail);
 
         ContactResponse response =
                 contactService.createContact(request, userEmail);
+
+        System.out.println(
+                "🔥 Contact Created ID: " + response.getId()
+        );
+
+        log.info("Create contact API completed successfully");
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -47,6 +66,12 @@ public class ContactController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Authentication authentication) {
+
+        log.info(
+                "Get contacts API request received. Page: {}, Size: {}",
+                page,
+                size
+        );
 
         String userEmail = authentication.getName();
 
@@ -63,6 +88,8 @@ public class ContactController {
                         pageable
                 );
 
+        log.info("Get contacts API completed successfully");
+
         return ResponseEntity.ok(contacts);
     }
 
@@ -72,6 +99,11 @@ public class ContactController {
             @PathVariable Long id,
             Authentication authentication) {
 
+        log.info(
+                "Get contact by ID API request received. Contact ID: {}",
+                id
+        );
+
         String userEmail = authentication.getName();
 
         ContactResponse response =
@@ -79,6 +111,11 @@ public class ContactController {
                         id,
                         userEmail
                 );
+
+        log.info(
+                "Get contact by ID API completed successfully. Contact ID: {}",
+                id
+        );
 
         return ResponseEntity.ok(response);
     }
@@ -90,6 +127,11 @@ public class ContactController {
             @Valid @RequestBody ContactRequest request,
             Authentication authentication) {
 
+        log.info(
+                "Update contact API request received. Contact ID: {}",
+                id
+        );
+
         String userEmail = authentication.getName();
 
         ContactResponse response =
@@ -98,6 +140,11 @@ public class ContactController {
                         request,
                         userEmail
                 );
+
+        log.info(
+                "Update contact API completed successfully. Contact ID: {}",
+                id
+        );
 
         return ResponseEntity.ok(response);
     }
@@ -108,6 +155,11 @@ public class ContactController {
             @PathVariable Long id,
             Authentication authentication) {
 
+        log.info(
+                "Delete contact API request received. Contact ID: {}",
+                id
+        );
+
         String userEmail = authentication.getName();
 
         contactService.deleteContact(
@@ -115,6 +167,12 @@ public class ContactController {
                 userEmail
         );
 
+        log.info(
+                "Delete contact API completed successfully. Contact ID: {}",
+                id
+        );
+
         return ResponseEntity.noContent().build();
     }
 }
+

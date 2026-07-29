@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
@@ -15,16 +16,43 @@ function ContactDetails() {
     fetchContact();
   }, [id]);
 
+  // Fetch Contact Details
   const fetchContact = async () => {
     try {
       setLoading(true);
       setError("");
 
+      // DEBUG LOG
+      console.log("FETCHING CONTACT DETAILS:", id);
+
       const response = await api.get(`/contacts/${id}`);
+
+      // DEBUG LOG
+      console.log(
+        "CONTACT DETAILS FETCHED SUCCESSFULLY:",
+        response.data
+      );
 
       setContact(response.data);
 
     } catch (err) {
+
+      // DEBUG LOG
+      console.error(
+        "FETCH CONTACT DETAILS ERROR:",
+        err
+      );
+
+      console.error(
+        "ERROR RESPONSE:",
+        err.response?.data
+      );
+
+      console.error(
+        "ERROR STATUS:",
+        err.response?.status
+      );
+
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -43,29 +71,98 @@ function ContactDetails() {
     }
   };
 
+
   // Delete Contact
   const handleDelete = async () => {
+
+    // DEBUG LOG 1
+    console.log(
+      "DELETE CONTACT BUTTON CLICKED"
+    );
+
+    // DEBUG LOG 2
+    console.log(
+      "CONTACT ID TO DELETE:",
+      id
+    );
+
+    // DEBUG LOG 3
+    console.log(
+      "CONTACT DATA TO DELETE:",
+      contact
+    );
 
     const confirmed = window.confirm(
       `Are you sure you want to delete ${contact.firstName} ${contact.lastName}?`
     );
 
+    // DEBUG LOG 4
+    console.log(
+      "DELETE CONFIRMATION RESULT:",
+      confirmed
+    );
+
     if (!confirmed) {
+
+      // DEBUG LOG
+      console.log(
+        "DELETE CANCELLED BY USER"
+      );
+
       return;
     }
 
     try {
+
       setDeleting(true);
       setError("");
 
-      await api.delete(`/contacts/${id}`);
+      // DEBUG LOG 5
+      console.log(
+        `SENDING DELETE REQUEST TO /api/contacts/${id}...`
+      );
 
-      // After successful deletion
+      const response = await api.delete(
+        `/contacts/${id}`
+      );
+
+      // DEBUG LOG 6
+      console.log(
+        "CONTACT DELETED SUCCESSFULLY:",
+        response.status
+      );
+
+      // DEBUG LOG 7
+      console.log(
+        "DELETED CONTACT ID:",
+        id
+      );
+
+      // Navigate back to dashboard
       navigate("/dashboard");
 
     } catch (err) {
 
+      // DEBUG LOG 8
+      console.error(
+        "DELETE CONTACT ERROR:",
+        err
+      );
+
+      // DEBUG LOG 9
+      console.error(
+        "ERROR RESPONSE:",
+        err.response?.data
+      );
+
+      // DEBUG LOG 10
+      console.error(
+        "ERROR STATUS:",
+        err.response?.status
+      );
+
       if (err.response?.status === 401) {
+
         localStorage.removeItem("token");
         localStorage.removeItem("user");
 
@@ -82,8 +179,10 @@ function ContactDetails() {
     }
   };
 
-  // Loading
+
+  // Loading State
   if (loading) {
+
     return (
       <div className="dashboard">
 
@@ -99,8 +198,10 @@ function ContactDetails() {
     );
   }
 
-  // Error
+
+  // Error State
   if (error && !contact) {
+
     return (
       <div className="dashboard">
 
@@ -112,7 +213,9 @@ function ContactDetails() {
 
           <button
             className="add-contact-button"
-            onClick={() => navigate("/dashboard")}
+            onClick={() =>
+              navigate("/dashboard")
+            }
           >
             Back to Contacts
           </button>
@@ -123,8 +226,10 @@ function ContactDetails() {
     );
   }
 
+
   return (
     <div className="dashboard">
+
 
       {/* Header */}
 
@@ -141,6 +246,9 @@ function ContactDetails() {
           </p>
 
         </div>
+
+
+        {/* Logout Button */}
 
         <button
           className="logout-button"
@@ -162,6 +270,7 @@ function ContactDetails() {
       {/* Main Content */}
 
       <main className="dashboard-content">
+
 
         {/* Back Button */}
 
@@ -187,13 +296,18 @@ function ContactDetails() {
             <div>
 
               <h2>
+
                 {contact.firstName}{" "}
+
                 {contact.lastName}
+
               </h2>
 
               <p>
+
                 {contact.title ||
                   "No title"}
+
               </p>
 
             </div>
@@ -204,9 +318,13 @@ function ContactDetails() {
           {/* Error Message */}
 
           {error && (
+
             <div className="error-message">
+
               {error}
+
             </div>
+
           )}
 
 
@@ -220,6 +338,9 @@ function ContactDetails() {
 
             <div className="details-grid">
 
+
+              {/* First Name */}
+
               <div className="detail-item">
 
                 <span>
@@ -227,12 +348,16 @@ function ContactDetails() {
                 </span>
 
                 <strong>
+
                   {contact.firstName ||
                     "N/A"}
+
                 </strong>
 
               </div>
 
+
+              {/* Last Name */}
 
               <div className="detail-item">
 
@@ -241,12 +366,16 @@ function ContactDetails() {
                 </span>
 
                 <strong>
+
                   {contact.lastName ||
                     "N/A"}
+
                 </strong>
 
               </div>
 
+
+              {/* Title */}
 
               <div className="detail-item">
 
@@ -255,8 +384,10 @@ function ContactDetails() {
                 </span>
 
                 <strong>
+
                   {contact.title ||
                     "N/A"}
+
                 </strong>
 
               </div>
@@ -276,6 +407,9 @@ function ContactDetails() {
 
             <div className="details-grid">
 
+
+              {/* Work Email */}
+
               <div className="detail-item">
 
                 <span>
@@ -283,12 +417,16 @@ function ContactDetails() {
                 </span>
 
                 <strong>
+
                   {contact.workEmail ||
                     "N/A"}
+
                 </strong>
 
               </div>
 
+
+              {/* Personal Email */}
 
               <div className="detail-item">
 
@@ -297,8 +435,10 @@ function ContactDetails() {
                 </span>
 
                 <strong>
+
                   {contact.personalEmail ||
                     "N/A"}
+
                 </strong>
 
               </div>
@@ -318,6 +458,9 @@ function ContactDetails() {
 
             <div className="details-grid">
 
+
+              {/* Work Phone */}
+
               <div className="detail-item">
 
                 <span>
@@ -325,12 +468,16 @@ function ContactDetails() {
                 </span>
 
                 <strong>
+
                   {contact.workPhone ||
                     "N/A"}
+
                 </strong>
 
               </div>
 
+
+              {/* Home Phone */}
 
               <div className="detail-item">
 
@@ -339,12 +486,16 @@ function ContactDetails() {
                 </span>
 
                 <strong>
+
                   {contact.homePhone ||
                     "N/A"}
+
                 </strong>
 
               </div>
 
+
+              {/* Personal Phone */}
 
               <div className="detail-item">
 
@@ -353,8 +504,10 @@ function ContactDetails() {
                 </span>
 
                 <strong>
+
                   {contact.personalPhone ||
                     "N/A"}
+
                 </strong>
 
               </div>
@@ -368,31 +521,46 @@ function ContactDetails() {
 
           <div className="contact-details-actions">
 
-            {/* Edit */}
+
+            {/* Edit Contact Button */}
 
             <button
               className="edit-contact-button"
-              onClick={() =>
+              onClick={() => {
+
+                console.log(
+                  "EDIT CONTACT BUTTON CLICKED"
+                );
+
+                console.log(
+                  "EDIT CONTACT ID:",
+                  contact.id
+                );
+
                 navigate(
                   `/contacts/${contact.id}/edit`
-                )
-              }
+                );
+
+              }}
             >
               Edit Contact
             </button>
 
 
-            {/* Delete */}
+            {/* Delete Contact Button */}
 
             <button
               className="delete-contact-button"
               onClick={handleDelete}
               disabled={deleting}
             >
+
               {deleting
                 ? "Deleting..."
                 : "Delete Contact"}
+
             </button>
+
 
           </div>
 
@@ -406,3 +574,4 @@ function ContactDetails() {
 }
 
 export default ContactDetails;
+

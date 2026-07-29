@@ -7,6 +7,8 @@ import backend.entity.User;
 import backend.exception.DuplicateResourceException;
 import backend.exception.InvalidCredentialsException;
 import backend.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,169 +16,206 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+private static final Logger log =
+        LoggerFactory.getLogger(AuthService.class);
 
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+private final UserRepository userRepository;
+private final PasswordEncoder passwordEncoder;
+
+public AuthService(
+        UserRepository userRepository,
+        PasswordEncoder passwordEncoder) {
+
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+}
+
+public User register(RegisterRequest request) {
+
+    log.info("User registration attempt started");
+
+    String email = normalizeEmail(request.getEmail());
+    String phone = normalizePhone(request.getPhone());
+
+    if (email == null && phone == null) {
+        log.warn("Registration failed: neither email nor phone was provided");
+
+        throw new IllegalArgumentException(
+                "Either email or phone number is required"
+        );
     }
 
-    // User Registration
-    public User register(RegisterRequest request) {
+    if (email != null && userRepository.existsByEmail(email)) {
+        log.warn("Registration failed: email already registered");
 
-        // Normalize email and phone
-        String email = normalizeEmail(request.getEmail());
-        String phone = normalizePhone(request.getPhone());
+        throw new DuplicateResourceException(
+                "Email is already registered"
+        );
+    }
 
-        // Check that email or phone is provided
-        if (email == null && phone == null) {
-            throw new IllegalArgumentException(
-                    "Either email or phone number is required"
-            );
-        }
+    if (phone != null && userRepository.existsByPhone(phone)) {
+        log.warn("Registration failed: phone number already registered");
 
-        // Check duplicate email
-        if (email != null && userRepository.existsByEmail(email)) {
-            throw new DuplicateResourceException(
-                    "Email is already registered"
-            );
-        }
+        throw new DuplicateResourceException(
+                "Phone number is already registered"
+        );
+    }
 
-        // Check duplicate phone
-        if (phone != null && userRepository.existsByPhone(phone)) {
-            throw new DuplicateResourceException(
-                    "Phone number is already registered"
-            );
-        }
+    User user = new User();
 
-        // Create new user
-        User user = new User();
+    user.setFirstName(request.getFirstName().trim());
+    user.setLastName(request.getLastName().trim());
+    user.setEmail(email);
+    user.setPhone(phone);
 
-        user.setFirstName(request.getFirstName().trim());
-        user.setLastName(request.getLastName().trim());
-        user.setEmail(email);
-        user.setPhone(phone);
+    user.setPassword(
+            passwordEncoder.encode(request.getPassword())
+    );
 
-        // Hash password before saving
-        user.setPassword(
-                passwordEncoder.encode(request.getPassword())
+    try {
+
+        User savedUser = userRepository.save(user);
+
+        log.info("User registration successful");
+
+        return savedUser;
+
+    } catch (DataIntegrityViolationException ex) {
+
+        log.error(
+                "Database integrity violation occurred during user registration",
+                ex
         );
 
-        try {
-            return userRepository.save(user);
-
-        } catch (DataIntegrityViolationException ex) {
-
-            // Database-specific handling is done centrally
-            // in GlobalExceptionHandler.
-            throw ex;
-        }
+        throw ex;
     }
+}
 
-    // User Login
-    public User login(LoginRequest request) {
+public User login(LoginRequest request) {
 
-        // Normalize login identifier
-        String identifier = request.getIdentifier().trim();
+    log.info("User login attempt started");
 
-        User user;
+    String identifier = request.getIdentifier().trim();
 
-        // Check if identifier is email
-        if (identifier.contains("@")) {
+    User user;
 
-            String email = identifier.toLowerCase();
+    if (identifier.contains("@")) {
 
-            user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new InvalidCredentialsException(
+        String email = identifier.toLowerCase();
+
+        user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+
+                    log.warn("Login failed: user not found");
+
+                    return new InvalidCredentialsException(
                             "Invalid email or password"
-                    ));
+                    );
+                });
 
-        } else {
+    } else {
 
-            // Otherwise treat identifier as phone
-            String phone = identifier;
+        String phone = identifier;
 
-            user = userRepository.findByPhone(phone)
-                    .orElseThrow(() -> new InvalidCredentialsException(
+        user = userRepository.findByPhone(phone)
+                .orElseThrow(() -> {
+
+                    log.warn("Login failed: user not found");
+
+                    return new InvalidCredentialsException(
                             "Invalid phone or password"
-                    ));
-        }
-
-        // Verify password
-        if (!passwordEncoder.matches(
-                request.getPassword(),
-                user.getPassword())) {
-
-            throw new InvalidCredentialsException(
-                    "Invalid email/phone or password"
-            );
-        }
-
-        return user;
+                    );
+                });
     }
 
-    // Change Password
-    public void changePassword(
-            String userEmail,
-            ChangePasswordRequest request) {
+    if (!passwordEncoder.matches(
+            request.getPassword(),
+            user.getPassword())) {
 
-        // Find currently authenticated user
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new InvalidCredentialsException(
+        log.warn("Login failed: invalid password");
+
+        throw new InvalidCredentialsException(
+                "Invalid email/phone or password"
+        );
+    }
+
+    log.info("User login successful");
+
+    return user;
+}
+
+public void changePassword(
+        String userEmail,
+        ChangePasswordRequest request) {
+
+    log.info("Password change attempt started");
+
+    User user = userRepository.findByEmail(userEmail)
+            .orElseThrow(() -> {
+
+                log.warn(
+                        "Password change failed: authenticated user not found"
+                );
+
+                return new InvalidCredentialsException(
                         "Authenticated user not found"
-                ));
+                );
+            });
 
-        // Verify current password
-        if (!passwordEncoder.matches(
-                request.getCurrentPassword(),
-                user.getPassword())) {
+    if (!passwordEncoder.matches(
+            request.getCurrentPassword(),
+            user.getPassword())) {
 
-            throw new InvalidCredentialsException(
-                    "Current password is incorrect"
-            );
-        }
-
-        // Prevent using the same password again
-        if (passwordEncoder.matches(
-                request.getNewPassword(),
-                user.getPassword())) {
-
-            throw new IllegalArgumentException(
-                    "New password must be different from current password"
-            );
-        }
-
-        // Encode and save new password
-        user.setPassword(
-                passwordEncoder.encode(
-                        request.getNewPassword()
-                )
+        log.warn(
+                "Password change failed: current password is incorrect"
         );
 
-        userRepository.save(user);
+        throw new InvalidCredentialsException(
+                "Current password is incorrect"
+        );
     }
 
-    // Normalize email
-    private String normalizeEmail(String email) {
+    if (passwordEncoder.matches(
+            request.getNewPassword(),
+            user.getPassword())) {
 
-        if (email == null || email.isBlank()) {
-            return null;
-        }
+        log.warn(
+                "Password change failed: new password is same as current password"
+        );
 
-        return email.trim().toLowerCase();
+        throw new IllegalArgumentException(
+                "New password must be different from current password"
+        );
     }
 
-    // Normalize phone
-    private String normalizePhone(String phone) {
+    user.setPassword(
+            passwordEncoder.encode(
+                    request.getNewPassword()
+            )
+    );
 
-        if (phone == null || phone.isBlank()) {
-            return null;
-        }
+    userRepository.save(user);
 
-        return phone.trim();
+    log.info("Password changed successfully");
+}
+
+private String normalizeEmail(String email) {
+
+    if (email == null || email.isBlank()) {
+        return null;
     }
+
+    return email.trim().toLowerCase();
+}
+
+private String normalizePhone(String phone) {
+
+    if (phone == null || phone.isBlank()) {
+        return null;
+    }
+
+    return phone.trim();
+}
+
 }

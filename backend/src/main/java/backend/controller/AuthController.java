@@ -8,6 +8,8 @@ import backend.entity.User;
 import backend.security.JwtService;
 import backend.service.AuthService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,79 +19,97 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
-    private final AuthService authService;
-    private final JwtService jwtService;
 
-    public AuthController(
-            AuthService authService,
-            JwtService jwtService) {
+private static final Logger log =
+        LoggerFactory.getLogger(AuthController.class);
 
-        this.authService = authService;
-        this.jwtService = jwtService;
-    }
+private final AuthService authService;
+private final JwtService jwtService;
 
-    // Registration API
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
-            @Valid @RequestBody RegisterRequest request) {
+public AuthController(
+        AuthService authService,
+        JwtService jwtService) {
 
-        User user = authService.register(request);
+    this.authService = authService;
+    this.jwtService = jwtService;
+}
 
-        String identifier = user.getEmail() != null
-                ? user.getEmail()
-                : user.getPhone();
+// Registration API
+@PostMapping("/register")
+public ResponseEntity<AuthResponse> register(
+        @Valid @RequestBody RegisterRequest request) {
 
-        String token = jwtService.generateToken(identifier);
+    log.info("Registration API request received");
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(toAuthResponse(user, token));
-    }
+    User user = authService.register(request);
 
-    // Login API
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
-            @Valid @RequestBody LoginRequest request) {
+    String identifier = user.getEmail() != null
+            ? user.getEmail()
+            : user.getPhone();
 
-        User user = authService.login(request);
+    String token = jwtService.generateToken(identifier);
 
-        String identifier = user.getEmail() != null
-                ? user.getEmail()
-                : user.getPhone();
+    log.info("Registration API completed successfully");
 
-        String token = jwtService.generateToken(identifier);
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(toAuthResponse(user, token));
+}
 
-        return ResponseEntity.ok(
-                toAuthResponse(user, token)
-        );
-    }
+// Login API
+@PostMapping("/login")
+public ResponseEntity<AuthResponse> login(
+        @Valid @RequestBody LoginRequest request) {
 
-    // Change Password API
-    // Requires a valid JWT token
-    @PutMapping("/change-password")
-    public ResponseEntity<Void> changePassword(
-            @Valid @RequestBody ChangePasswordRequest request,
-            java.security.Principal principal) {
+    log.info("Login API request received");
 
-        authService.changePassword(
-                principal.getName(),
-                request
-        );
+    User user = authService.login(request);
 
-        return ResponseEntity.noContent().build();
-    }
+    String identifier = user.getEmail() != null
+            ? user.getEmail()
+            : user.getPhone();
 
-    private AuthResponse toAuthResponse(
-            User user,
-            String token) {
+    String token = jwtService.generateToken(identifier);
 
-        return new AuthResponse(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getPhone(),
-                token
-        );
-    }
+    log.info("Login API completed successfully");
+
+    return ResponseEntity.ok(
+            toAuthResponse(user, token)
+    );
+}
+
+// Change Password API
+// Requires a valid JWT token
+@PutMapping("/change-password")
+public ResponseEntity<Void> changePassword(
+        @Valid @RequestBody ChangePasswordRequest request,
+        java.security.Principal principal) {
+
+    log.info("Change password API request received");
+
+    authService.changePassword(
+            principal.getName(),
+            request
+    );
+
+    log.info("Change password API completed successfully");
+
+    return ResponseEntity.noContent().build();
+}
+
+private AuthResponse toAuthResponse(
+        User user,
+        String token) {
+
+    return new AuthResponse(
+            user.getId(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getEmail(),
+            user.getPhone(),
+            token
+    );
+}
+
+
 }

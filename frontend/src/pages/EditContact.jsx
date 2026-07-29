@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
@@ -30,7 +31,11 @@ function EditContact() {
       setLoading(true);
       setError("");
 
+      console.log("FETCHING CONTACT:", id);
+
       const response = await api.get(`/contacts/${id}`);
+
+      console.log("CONTACT FETCHED SUCCESSFULLY:", response.data);
 
       setFormData({
         firstName: response.data.firstName || "",
@@ -44,6 +49,10 @@ function EditContact() {
       });
 
     } catch (err) {
+      console.error("FETCH CONTACT ERROR:", err);
+      console.error("ERROR RESPONSE:", err.response?.data);
+      console.error("ERROR STATUS:", err.response?.status);
+
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -72,19 +81,52 @@ function EditContact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // DEBUG LOG 1
+    console.log("UPDATE CONTACT BUTTON CLICKED");
+
+    // DEBUG LOG 2
+    console.log("CONTACT ID:", id);
+
+    // DEBUG LOG 3
+    console.log("UPDATED FORM DATA:", formData);
+
     try {
       setSaving(true);
       setError("");
 
-      await api.put(
+      // DEBUG LOG 4
+      console.log(
+        `SENDING PUT REQUEST TO /api/contacts/${id}...`
+      );
+
+      const response = await api.put(
         `/contacts/${id}`,
         formData
+      );
+
+      // DEBUG LOG 5
+      console.log(
+        "CONTACT UPDATED SUCCESSFULLY:",
+        response.data
       );
 
       // After successful update
       navigate(`/contacts/${id}`);
 
     } catch (err) {
+      // DEBUG LOG 6
+      console.error("UPDATE CONTACT ERROR:", err);
+
+      console.error(
+        "ERROR RESPONSE:",
+        err.response?.data
+      );
+
+      console.error(
+        "ERROR STATUS:",
+        err.response?.status
+      );
+
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -299,3 +341,4 @@ function EditContact() {
 }
 
 export default EditContact;
+
