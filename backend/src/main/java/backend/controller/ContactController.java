@@ -15,106 +15,111 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/contacts")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ContactController {
 
-    private final ContactService contactService;
+private static final int MAX_PAGE_SIZE = 100;
 
-    public ContactController(ContactService contactService) {
-        this.contactService = contactService;
-    }
+private final ContactService contactService;
 
-    // Create a new contact
-    @PostMapping
-    public ResponseEntity<ContactResponse> createContact(
-            @Valid @RequestBody ContactRequest request,
-            Authentication authentication) {
+public ContactController(ContactService contactService) {
+    this.contactService = contactService;
+}
 
-        String userEmail = authentication.getName();
+// Create a new contact
+@PostMapping
+public ResponseEntity<ContactResponse> createContact(
+        @Valid @RequestBody ContactRequest request,
+        Authentication authentication) {
 
-        ContactResponse response =
-                contactService.createContact(request, userEmail);
+    String userEmail = authentication.getName();
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
-    }
+    ContactResponse response =
+            contactService.createContact(request, userEmail);
 
-    // Get all contacts with pagination and search
-    @GetMapping
-    public ResponseEntity<Page<ContactResponse>> getContacts(
-            @RequestParam(defaultValue = "") String search,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            Authentication authentication) {
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(response);
+}
 
-        String userEmail = authentication.getName();
+// Get all contacts with pagination and search
+@GetMapping
+public ResponseEntity<Page<ContactResponse>> getContacts(
+        @RequestParam(defaultValue = "") String search,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        Authentication authentication) {
 
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by("firstName").ascending()
-        );
+    String userEmail = authentication.getName();
 
-        Page<ContactResponse> contacts =
-                contactService.getContacts(
-                        userEmail,
-                        search,
-                        pageable
-                );
+    int safePageSize = Math.min(size, MAX_PAGE_SIZE);
 
-        return ResponseEntity.ok(contacts);
-    }
+    Pageable pageable = PageRequest.of(
+            page,
+            safePageSize,
+            Sort.by("firstName").ascending()
+    );
 
-    // Get contact by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ContactResponse> getContactById(
-            @PathVariable Long id,
-            Authentication authentication) {
+    Page<ContactResponse> contacts =
+            contactService.getContacts(
+                    userEmail,
+                    search,
+                    pageable
+            );
 
-        String userEmail = authentication.getName();
+    return ResponseEntity.ok(contacts);
+}
 
-        ContactResponse response =
-                contactService.getContactById(
-                        id,
-                        userEmail
-                );
+// Get contact by ID
+@GetMapping("/{id}")
+public ResponseEntity<ContactResponse> getContactById(
+        @PathVariable Long id,
+        Authentication authentication) {
 
-        return ResponseEntity.ok(response);
-    }
+    String userEmail = authentication.getName();
 
-    // Update contact
-    @PutMapping("/{id}")
-    public ResponseEntity<ContactResponse> updateContact(
-            @PathVariable Long id,
-            @Valid @RequestBody ContactRequest request,
-            Authentication authentication) {
+    ContactResponse response =
+            contactService.getContactById(
+                    id,
+                    userEmail
+            );
 
-        String userEmail = authentication.getName();
+    return ResponseEntity.ok(response);
+}
 
-        ContactResponse response =
-                contactService.updateContact(
-                        id,
-                        request,
-                        userEmail
-                );
+// Update contact
+@PutMapping("/{id}")
+public ResponseEntity<ContactResponse> updateContact(
+        @PathVariable Long id,
+        @Valid @RequestBody ContactRequest request,
+        Authentication authentication) {
 
-        return ResponseEntity.ok(response);
-    }
+    String userEmail = authentication.getName();
 
-    // Delete contact
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContact(
-            @PathVariable Long id,
-            Authentication authentication) {
+    ContactResponse response =
+            contactService.updateContact(
+                    id,
+                    request,
+                    userEmail
+            );
 
-        String userEmail = authentication.getName();
+    return ResponseEntity.ok(response);
+}
 
-        contactService.deleteContact(
-                id,
-                userEmail
-        );
+// Delete contact
+@DeleteMapping("/{id}")
+public ResponseEntity<Void> deleteContact(
+        @PathVariable Long id,
+        Authentication authentication) {
 
-        return ResponseEntity.noContent().build();
-    }
+    String userEmail = authentication.getName();
+
+    contactService.deleteContact(
+            id,
+            userEmail
+    );
+
+    return ResponseEntity.noContent().build();
+}
+
 }
