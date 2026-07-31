@@ -1,6 +1,7 @@
 package backend.config;
 
 import backend.security.JwtAuthenticationFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,6 +35,7 @@ public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
 }
 
+// CORS configuration for React Vite frontend
 @Bean
 public CorsConfigurationSource corsConfigurationSource() {
 
@@ -44,11 +46,20 @@ public CorsConfigurationSource corsConfigurationSource() {
     );
 
     configuration.setAllowedMethods(
-            List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            List.of(
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE",
+                    "OPTIONS"
+            )
     );
 
     configuration.setAllowedHeaders(
-            List.of("Authorization", "Content-Type")
+            List.of(
+                    "Authorization",
+                    "Content-Type"
+            )
     );
 
     configuration.setAllowCredentials(true);
@@ -56,27 +67,56 @@ public CorsConfigurationSource corsConfigurationSource() {
     UrlBasedCorsConfigurationSource source =
             new UrlBasedCorsConfigurationSource();
 
-    source.registerCorsConfiguration("/**", configuration);
+    source.registerCorsConfiguration(
+            "/**",
+            configuration
+    );
 
     return source;
 }
 
+// Prevent JwtAuthenticationFilter from being
+// automatically registered by the servlet container.
+// It will only run through Spring Security filter chain.
 @Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http)
+public FilterRegistrationBean<JwtAuthenticationFilter>
+jwtFilterRegistration(
+        JwtAuthenticationFilter filter) {
+
+    FilterRegistrationBean<JwtAuthenticationFilter> registration =
+            new FilterRegistrationBean<>(filter);
+
+    registration.setEnabled(false);
+
+    return registration;
+}
+
+@Bean
+public SecurityFilterChain securityFilterChain(
+        HttpSecurity http)
         throws Exception {
 
     http
             // Enable CORS
-            .cors(cors -> cors.configurationSource(
-                    corsConfigurationSource()
-            ))
+            .cors(cors ->
+                    cors.configurationSource(
+                            corsConfigurationSource()
+                    )
+            )
 
             // Disable CSRF
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf ->
+                    csrf.disable()
+            )
 
             // Disable default username/password authentication
-            .httpBasic(httpBasic -> httpBasic.disable())
-            .formLogin(formLogin -> formLogin.disable())
+            .httpBasic(httpBasic ->
+                    httpBasic.disable()
+            )
+
+            .formLogin(formLogin ->
+                    formLogin.disable()
+            )
 
             // JWT is stateless
             .sessionManagement(session ->
@@ -86,25 +126,33 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http)
             )
 
             // Authentication and authorization rules
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth ->
+                    auth
 
-                    // Allow CORS preflight requests
-                    .requestMatchers(HttpMethod.OPTIONS, "/**")
-                    .permitAll()
+                            // Allow CORS preflight requests
+                            .requestMatchers(
+                                    HttpMethod.OPTIONS,
+                                    "/**"
+                            )
+                            .permitAll()
 
-                    // Register and Login are public
-                    .requestMatchers("/api/auth/**")
-                    .permitAll()
+                            // Register and Login are public
+                            .requestMatchers(
+                                    "/api/auth/**"
+                            )
+                            .permitAll()
 
-                    // Everything else requires JWT
-                    .anyRequest()
-                    .authenticated()
+                            // Everything else requires JWT
+                            .anyRequest()
+                            .authenticated()
             )
 
             // Return 401 for unauthenticated requests
             .exceptionHandling(exception ->
                     exception.authenticationEntryPoint(
-                            (request, response, authException) ->
+                            (request,
+                             response,
+                             authException) ->
                                     response.sendError(
                                             HttpStatus.UNAUTHORIZED.value(),
                                             "Unauthorized"
@@ -112,7 +160,8 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http)
                     )
             )
 
-            // JWT filter
+            // Add JWT filter before
+            // UsernamePasswordAuthenticationFilter
             .addFilterBefore(
                     jwtAuthenticationFilter,
                     UsernamePasswordAuthenticationFilter.class
