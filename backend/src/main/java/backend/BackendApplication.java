@@ -1,25 +1,14 @@
 package backend;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootApplication
-public class BackendApplication {
+@SpringBootTest
+@ActiveProfiles("test")
+class BackendApplicationTests {
 
-    private static final Logger logger =
-            LoggerFactory.getLogger(BackendApplication.class);
-
-    public static void main(String[] args) {
-        try {
-            SpringApplication.run(BackendApplication.class, args);
-        } catch (Exception ex) {
-            logger.error(
-                    "Application failed to start",
-                    ex
-            );
-            System.exit(1);
-        }
+    @Test
+    void contextLoads() {
     }
 }
