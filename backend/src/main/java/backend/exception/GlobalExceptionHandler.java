@@ -178,8 +178,7 @@ public ResponseEntity<Map<String, String>> handleMessageNotReadable(
         HttpMessageNotReadableException ex) {
 
     logger.warn(
-            "Invalid or malformed request body: {}",
-            ex.getMessage()
+            "Invalid or malformed request body"
     );
 
     Map<String, String> response = new HashMap<>();
@@ -199,8 +198,7 @@ public ResponseEntity<Map<String, String>> handleTypeMismatch(
         MethodArgumentTypeMismatchException ex) {
 
     logger.warn(
-            "Invalid request parameter: {}",
-            ex.getMessage()
+            "Invalid request parameter"
     );
 
     Map<String, String> response = new HashMap<>();
