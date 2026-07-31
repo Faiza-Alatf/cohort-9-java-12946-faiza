@@ -5,12 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.security.access.AccessDeniedException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -170,6 +172,48 @@ public ResponseEntity<Map<String, String>> handleIllegalArgument(
             .body(response);
 }
 
+// Malformed or missing JSON request body
+@ExceptionHandler(HttpMessageNotReadableException.class)
+public ResponseEntity<Map<String, String>> handleMessageNotReadable(
+        HttpMessageNotReadableException ex) {
+
+    logger.warn(
+            "Invalid or malformed request body: {}",
+            ex.getMessage()
+    );
+
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            "Invalid or malformed request body"
+    );
+
+    return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(response);
+}
+
+// Invalid path variable or query parameter type
+@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+public ResponseEntity<Map<String, String>> handleTypeMismatch(
+        MethodArgumentTypeMismatchException ex) {
+
+    logger.warn(
+            "Invalid request parameter: {}",
+            ex.getMessage()
+    );
+
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            "Invalid value for request parameter"
+    );
+
+    return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(response);
+}
+
 // Preserve status from ResponseStatusException
 @ExceptionHandler(ResponseStatusException.class)
 public ResponseEntity<Map<String, String>> handleResponseStatusException(
@@ -194,9 +238,14 @@ public ResponseEntity<Map<String, String>> handleErrorResponseException(
         ErrorResponseException ex) {
 
     Map<String, String> response = new HashMap<>();
+
+    String detail = ex.getBody().getDetail();
+
     response.put(
             "error",
-            ex.getMessage()
+            detail != null
+                    ? detail
+                    : "Request failed"
     );
 
     return ResponseEntity
