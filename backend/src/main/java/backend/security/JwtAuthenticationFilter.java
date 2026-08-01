@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import java.util.Collections;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+
 private static final Logger log =
         LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
@@ -30,7 +32,8 @@ public JwtAuthenticationFilter(JwtService jwtService) {
 }
 
 @Override
-protected boolean shouldNotFilter(HttpServletRequest request) {
+protected boolean shouldNotFilter(
+        HttpServletRequest request) {
 
     String path = request.getServletPath();
 
@@ -45,11 +48,11 @@ protected void doFilterInternal(
         FilterChain filterChain)
         throws ServletException, IOException {
 
-    String authHeader =
-            request.getHeader("Authorization");
+    // JWT is stored in an HttpOnly cookie
+    String token = extractJwtFromCookie(request);
 
-    if (authHeader == null
-            || !authHeader.startsWith("Bearer ")) {
+    // No JWT cookie found
+    if (token == null || token.isBlank()) {
 
         filterChain.doFilter(
                 request,
@@ -58,9 +61,6 @@ protected void doFilterInternal(
 
         return;
     }
-
-    String token =
-            authHeader.substring(7);
 
     try {
 
@@ -115,6 +115,27 @@ protected void doFilterInternal(
             request,
             response
     );
+}
+
+// Extract JWT from the HttpOnly cookie
+private String extractJwtFromCookie(
+        HttpServletRequest request) {
+
+    Cookie[] cookies =
+            request.getCookies();
+
+    if (cookies == null) {
+        return null;
+    }
+
+    for (Cookie cookie : cookies) {
+
+        if ("jwt".equals(cookie.getName())) {
+            return cookie.getValue();
+        }
+    }
+
+    return null;
 }
 
 
