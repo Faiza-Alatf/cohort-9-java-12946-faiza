@@ -3,7 +3,6 @@ package backend.config;
 import backend.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,108 +20,105 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter) {
+private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+public SecurityConfig(
+        JwtAuthenticationFilter jwtAuthenticationFilter) {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+}
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+@Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+}
 
-        http
-                // Enable CORS
-                .cors(cors -> cors.configurationSource(
-                        corsConfigurationSource()
-                ))
+@Bean
+public SecurityFilterChain securityFilterChain(
+        HttpSecurity http) throws Exception {
 
-                // Disable CSRF
-                .csrf(csrf -> csrf.disable())
+    http
+            // Enable CORS
+            .cors(cors -> cors.configurationSource(
+                    corsConfigurationSource()
+            ))
 
-                // Disable default authentication
-                .httpBasic(httpBasic -> httpBasic.disable())
-                .formLogin(formLogin -> formLogin.disable())
+            // Disable CSRF
+            .csrf(csrf -> csrf.disable())
 
-                // JWT is stateless
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
+            // Disable default authentication
+            .httpBasic(httpBasic -> httpBasic.disable())
+            .formLogin(formLogin -> formLogin.disable())
 
-                // Authorization rules
-                .authorizeHttpRequests(auth -> auth
+            // JWT is stateless
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(
+                            SessionCreationPolicy.STATELESS
+                    )
+            )
 
-                        // Allow CORS preflight requests
-                        .requestMatchers(
-                                HttpMethod.OPTIONS,
-                                "/**"
-                        ).permitAll()
+            // Authorization rules
+            .authorizeHttpRequests(auth -> auth
 
-                        // Register and Login are public
-                        .requestMatchers(
-                                "/api/auth/**"
-                        ).permitAll()
+                    // Register and Login are public
+                    .requestMatchers(
+                            "/api/auth/register",
+                            "/api/auth/login"
+                    ).permitAll()
 
-                        // Everything else requires JWT
-                        .anyRequest().authenticated()
-                )
+                    // Everything else requires JWT
+                    .anyRequest().authenticated()
+            )
 
-                // JWT filter
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                );
+            // JWT filter
+            .addFilterBefore(
+                    jwtAuthenticationFilter,
+                    UsernamePasswordAuthenticationFilter.class
+            );
 
-        return http.build();
-    }
+    return http.build();
+}
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+@Bean
+public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+    CorsConfiguration configuration =
+            new CorsConfiguration();
 
-        // React frontend
-        configuration.setAllowedOrigins(
-                List.of("http://localhost:5173")
-        );
+    // React frontend
+    configuration.setAllowedOrigins(
+            List.of("http://localhost:5173")
+    );
 
-        // Allowed HTTP methods
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "OPTIONS"
-                )
-        );
+    // Allowed HTTP methods
+    configuration.setAllowedMethods(
+            List.of(
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE",
+                    "OPTIONS"
+            )
+    );
 
-        // Allow all request headers
-        configuration.setAllowedHeaders(
-                List.of("*")
-        );
+    // Allow all request headers
+    configuration.setAllowedHeaders(
+            List.of("*")
+    );
 
-        // Allow Authorization header / credentials
-        configuration.setAllowCredentials(true);
+    // Allow Authorization header / credentials
+    configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+    UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+    source.registerCorsConfiguration(
+            "/**",
+            configuration
+    );
 
-        return source;
-    }
+    return source;
+}
+
 }
