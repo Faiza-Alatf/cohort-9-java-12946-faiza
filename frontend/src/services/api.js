@@ -10,7 +10,7 @@ headers: {
 // Allow browser to send HttpOnly JWT cookie
 withCredentials: true,
 
-// Prevent requests from hanging indefinitely
+// Abort requests that take longer than 10 seconds
 timeout: 10000,
 });
 
