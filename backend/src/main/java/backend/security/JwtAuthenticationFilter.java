@@ -1,11 +1,13 @@
 package backend.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -16,21 +18,19 @@ import java.io.IOException;
 import java.util.Collections;
 
 @Component
-public class JwtAuthenticationFilter
-extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+private static final Logger log =
+        LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
 private final JwtService jwtService;
 
-public JwtAuthenticationFilter(
-        JwtService jwtService) {
-
+public JwtAuthenticationFilter(JwtService jwtService) {
     this.jwtService = jwtService;
 }
 
 @Override
-protected boolean shouldNotFilter(
-        HttpServletRequest request) {
+protected boolean shouldNotFilter(HttpServletRequest request) {
 
     String path = request.getServletPath();
 
@@ -45,16 +45,22 @@ protected void doFilterInternal(
         FilterChain filterChain)
         throws ServletException, IOException {
 
-    String token =
-            extractTokenFromCookie(request);
+    String authHeader =
+            request.getHeader("Authorization");
 
-    if (token == null) {
+    if (authHeader == null
+            || !authHeader.startsWith("Bearer ")) {
+
         filterChain.doFilter(
                 request,
                 response
         );
+
         return;
     }
+
+    String token =
+            authHeader.substring(7);
 
     try {
 
@@ -84,7 +90,22 @@ protected void doFilterInternal(
                         authentication
                 );
 
-    } catch (Exception e) {
+    } catch (JwtException e) {
+
+        log.warn(
+                "JWT validation failed: {}",
+                e.getClass().getSimpleName()
+        );
+
+        SecurityContextHolder
+                .clearContext();
+
+    } catch (IllegalArgumentException e) {
+
+        log.warn(
+                "Invalid JWT token: {}",
+                e.getClass().getSimpleName()
+        );
 
         SecurityContextHolder
                 .clearContext();
@@ -94,26 +115,6 @@ protected void doFilterInternal(
             request,
             response
     );
-}
-
-private String extractTokenFromCookie(
-        HttpServletRequest request) {
-
-    Cookie[] cookies =
-            request.getCookies();
-
-    if (cookies == null) {
-        return null;
-    }
-
-    for (Cookie cookie : cookies) {
-
-        if ("jwt".equals(cookie.getName())) {
-            return cookie.getValue();
-        }
-    }
-
-    return null;
 }
 
 
