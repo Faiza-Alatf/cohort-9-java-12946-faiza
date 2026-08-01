@@ -10,6 +10,7 @@ import backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -26,11 +27,15 @@ allowCredentials = "true"
 )
 public class AuthController {
 
+
 private static final Logger log =
         LoggerFactory.getLogger(AuthController.class);
 
 private final AuthService authService;
 private final JwtService jwtService;
+
+@Value("${app.cookie.secure:true}")
+private boolean secureCookie;
 
 public AuthController(
         AuthService authService,
@@ -135,36 +140,36 @@ public ResponseEntity<Void> logout() {
             .noContent()
             .header(
                     HttpHeaders.SET_COOKIE,
-                    createJwtCookie(null).toString()
+                    createLogoutCookie().toString()
             )
             .build();
 }
 
 // Create JWT cookie for login/register
-// Clear JWT cookie for logout
 private ResponseCookie createJwtCookie(
         String token) {
 
-    ResponseCookie.ResponseCookieBuilder cookieBuilder =
-            ResponseCookie
-                    .from(
-                            "jwt",
-                            token == null ? "" : token
-                    )
-                    .httpOnly(true)
-                    .secure(false)
-                    .path("/")
-                    .sameSite("Lax");
+    return ResponseCookie
+            .from("jwt", token)
+            .httpOnly(true)
+            .secure(secureCookie)
+            .path("/")
+            .sameSite("Lax")
+            .maxAge(24 * 60 * 60)
+            .build();
+}
 
-    if (token == null) {
-        cookieBuilder.maxAge(0);
-    } else {
-        cookieBuilder.maxAge(
-                24 * 60 * 60
-        );
-    }
+// Clear JWT cookie for logout
+private ResponseCookie createLogoutCookie() {
 
-    return cookieBuilder.build();
+    return ResponseCookie
+            .from("jwt", "")
+            .httpOnly(true)
+            .secure(secureCookie)
+            .path("/")
+            .sameSite("Lax")
+            .maxAge(0)
+            .build();
 }
 
 private AuthResponse toAuthResponse(
@@ -179,6 +184,5 @@ private AuthResponse toAuthResponse(
             null
     );
 }
-
 
 }
