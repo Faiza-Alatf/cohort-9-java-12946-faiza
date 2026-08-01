@@ -1,4 +1,3 @@
-
 package backend.controller;
 
 import backend.dto.ContactRequest;
@@ -36,21 +35,12 @@ public class ContactController {
             @Valid @RequestBody ContactRequest request,
             Authentication authentication) {
 
-        // Temporary console log for debugging
-        System.out.println("🔥🔥🔥 POST /api/contacts HIT 🔥🔥🔥");
-
         log.info("Create contact API request received");
 
         String userEmail = authentication.getName();
 
-        System.out.println("🔥 User: " + userEmail);
-
         ContactResponse response =
                 contactService.createContact(request, userEmail);
-
-        System.out.println(
-                "🔥 Contact Created ID: " + response.getId()
-        );
 
         log.info("Create contact API completed successfully");
 
@@ -175,4 +165,3 @@ public class ContactController {
         return ResponseEntity.noContent().build();
     }
 }
-
