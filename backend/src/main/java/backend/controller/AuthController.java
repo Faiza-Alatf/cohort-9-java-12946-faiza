@@ -7,14 +7,16 @@ import backend.dto.RegisterRequest;
 import backend.entity.User;
 import backend.security.JwtService;
 import backend.service.AuthService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -23,7 +25,6 @@ origins = "http://localhost:5173",
 allowCredentials = "true"
 )
 public class AuthController {
-
 
 private static final Logger log =
         LoggerFactory.getLogger(AuthController.class);
@@ -42,8 +43,7 @@ public AuthController(
 // Registration API
 @PostMapping("/register")
 public ResponseEntity<AuthResponse> register(
-        @Valid @RequestBody RegisterRequest request,
-        HttpServletResponse response) {
+        @Valid @RequestBody RegisterRequest request) {
 
     log.info("Registration API request received");
 
@@ -56,22 +56,23 @@ public ResponseEntity<AuthResponse> register(
     String token =
             jwtService.generateToken(identifier);
 
-    addJwtCookie(response, token);
-
     log.info(
             "Registration API completed successfully"
     );
 
     return ResponseEntity
             .status(HttpStatus.CREATED)
+            .header(
+                    HttpHeaders.SET_COOKIE,
+                    createJwtCookie(token).toString()
+            )
             .body(toAuthResponse(user));
 }
 
 // Login API
 @PostMapping("/login")
 public ResponseEntity<AuthResponse> login(
-        @Valid @RequestBody LoginRequest request,
-        HttpServletResponse response) {
+        @Valid @RequestBody LoginRequest request) {
 
     log.info("Login API request received");
 
@@ -84,15 +85,17 @@ public ResponseEntity<AuthResponse> login(
     String token =
             jwtService.generateToken(identifier);
 
-    addJwtCookie(response, token);
-
     log.info(
             "Login API completed successfully"
     );
 
-    return ResponseEntity.ok(
-            toAuthResponse(user)
-    );
+    return ResponseEntity
+            .ok()
+            .header(
+                    HttpHeaders.SET_COOKIE,
+                    createJwtCookie(token).toString()
+            )
+            .body(toAuthResponse(user));
 }
 
 // Change Password API
@@ -100,7 +103,7 @@ public ResponseEntity<AuthResponse> login(
 @PutMapping("/change-password")
 public ResponseEntity<Void> changePassword(
         @Valid @RequestBody ChangePasswordRequest request,
-        java.security.Principal principal) {
+        Principal principal) {
 
     log.info(
             "Change password API request received"
@@ -120,51 +123,48 @@ public ResponseEntity<Void> changePassword(
 
 // Logout API
 @PostMapping("/logout")
-public ResponseEntity<Void> logout(
-        HttpServletResponse response) {
+public ResponseEntity<Void> logout() {
 
     log.info("Logout API request received");
-
-    Cookie cookie = new Cookie(
-            "jwt",
-            ""
-    );
-
-    cookie.setHttpOnly(true);
-    cookie.setSecure(false);
-    cookie.setPath("/");
-    cookie.setMaxAge(0);
-
-    response.addCookie(cookie);
 
     log.info(
             "Logout API completed successfully"
     );
 
-    return ResponseEntity.noContent().build();
+    return ResponseEntity
+            .noContent()
+            .header(
+                    HttpHeaders.SET_COOKIE,
+                    createJwtCookie(null).toString()
+            )
+            .build();
 }
 
-private void addJwtCookie(
-        HttpServletResponse response,
+// Create JWT cookie for login/register
+// Clear JWT cookie for logout
+private ResponseCookie createJwtCookie(
         String token) {
 
-    Cookie cookie = new Cookie(
-            "jwt",
-            token
-    );
+    ResponseCookie.ResponseCookieBuilder cookieBuilder =
+            ResponseCookie
+                    .from(
+                            "jwt",
+                            token == null ? "" : token
+                    )
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .sameSite("Lax");
 
-    // JavaScript cannot access this cookie
-    cookie.setHttpOnly(true);
+    if (token == null) {
+        cookieBuilder.maxAge(0);
+    } else {
+        cookieBuilder.maxAge(
+                24 * 60 * 60
+        );
+    }
 
-    // For localhost development
-    cookie.setSecure(false);
-
-    cookie.setPath("/");
-
-    // Cookie lifetime: 1 day
-    cookie.setMaxAge(24 * 60 * 60);
-
-    response.addCookie(cookie);
+    return cookieBuilder.build();
 }
 
 private AuthResponse toAuthResponse(
