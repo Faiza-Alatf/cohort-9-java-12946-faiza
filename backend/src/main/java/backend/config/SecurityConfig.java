@@ -67,9 +67,10 @@ public class SecurityConfig {
                                 "/**"
                         ).permitAll()
 
-                        // Register and Login are public
+                        // Only Register and Login are public
                         .requestMatchers(
-                                "/api/auth/**"
+                                "/api/auth/register",
+                                "/api/auth/login"
                         ).permitAll()
 
                         // Everything else requires JWT
