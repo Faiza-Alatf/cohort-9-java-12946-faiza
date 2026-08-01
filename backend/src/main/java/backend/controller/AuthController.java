@@ -7,6 +7,8 @@ import backend.dto.RegisterRequest;
 import backend.entity.User;
 import backend.security.JwtService;
 import backend.service.AuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(
+origins = "http://localhost:5173",
+allowCredentials = "true"
+)
 public class AuthController {
 
 
@@ -37,7 +42,8 @@ public AuthController(
 // Registration API
 @PostMapping("/register")
 public ResponseEntity<AuthResponse> register(
-        @Valid @RequestBody RegisterRequest request) {
+        @Valid @RequestBody RegisterRequest request,
+        HttpServletResponse response) {
 
     log.info("Registration API request received");
 
@@ -47,19 +53,25 @@ public ResponseEntity<AuthResponse> register(
             ? user.getEmail()
             : user.getPhone();
 
-    String token = jwtService.generateToken(identifier);
+    String token =
+            jwtService.generateToken(identifier);
 
-    log.info("Registration API completed successfully");
+    addJwtCookie(response, token);
+
+    log.info(
+            "Registration API completed successfully"
+    );
 
     return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(toAuthResponse(user, token));
+            .body(toAuthResponse(user));
 }
 
 // Login API
 @PostMapping("/login")
 public ResponseEntity<AuthResponse> login(
-        @Valid @RequestBody LoginRequest request) {
+        @Valid @RequestBody LoginRequest request,
+        HttpServletResponse response) {
 
     log.info("Login API request received");
 
@@ -69,12 +81,17 @@ public ResponseEntity<AuthResponse> login(
             ? user.getEmail()
             : user.getPhone();
 
-    String token = jwtService.generateToken(identifier);
+    String token =
+            jwtService.generateToken(identifier);
 
-    log.info("Login API completed successfully");
+    addJwtCookie(response, token);
+
+    log.info(
+            "Login API completed successfully"
+    );
 
     return ResponseEntity.ok(
-            toAuthResponse(user, token)
+            toAuthResponse(user)
     );
 }
 
@@ -85,21 +102,73 @@ public ResponseEntity<Void> changePassword(
         @Valid @RequestBody ChangePasswordRequest request,
         java.security.Principal principal) {
 
-    log.info("Change password API request received");
+    log.info(
+            "Change password API request received"
+    );
 
     authService.changePassword(
             principal.getName(),
             request
     );
 
-    log.info("Change password API completed successfully");
+    log.info(
+            "Change password API completed successfully"
+    );
 
     return ResponseEntity.noContent().build();
 }
 
-private AuthResponse toAuthResponse(
-        User user,
+// Logout API
+@PostMapping("/logout")
+public ResponseEntity<Void> logout(
+        HttpServletResponse response) {
+
+    log.info("Logout API request received");
+
+    Cookie cookie = new Cookie(
+            "jwt",
+            ""
+    );
+
+    cookie.setHttpOnly(true);
+    cookie.setSecure(false);
+    cookie.setPath("/");
+    cookie.setMaxAge(0);
+
+    response.addCookie(cookie);
+
+    log.info(
+            "Logout API completed successfully"
+    );
+
+    return ResponseEntity.noContent().build();
+}
+
+private void addJwtCookie(
+        HttpServletResponse response,
         String token) {
+
+    Cookie cookie = new Cookie(
+            "jwt",
+            token
+    );
+
+    // JavaScript cannot access this cookie
+    cookie.setHttpOnly(true);
+
+    // For localhost development
+    cookie.setSecure(false);
+
+    cookie.setPath("/");
+
+    // Cookie lifetime: 1 day
+    cookie.setMaxAge(24 * 60 * 60);
+
+    response.addCookie(cookie);
+}
+
+private AuthResponse toAuthResponse(
+        User user) {
 
     return new AuthResponse(
             user.getId(),
@@ -107,7 +176,7 @@ private AuthResponse toAuthResponse(
             user.getLastName(),
             user.getEmail(),
             user.getPhone(),
-            token
+            null
     );
 }
 

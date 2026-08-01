@@ -1,83 +1,129 @@
-package backend.dto;
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../services/api";
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+function Login() {
+const navigate = useNavigate();
 
-public class RegisterRequest {
+const [formData, setFormData] = useState({
+identifier: "",
+password: "",
+});
+
+const [error, setError] = useState("");
+const [loading, setLoading] = useState(false);
+
+const handleChange = (e) => {
+setFormData({
+...formData,
+[e.target.name]: e.target.value,
+});
+};
+
+const handleSubmit = async (e) => {
+e.preventDefault();
 
 
-@NotBlank(message = "First name is required")
-private String firstName;
+setError("");
+setLoading(true);
 
-@NotBlank(message = "Last name is required")
-private String lastName;
+try {
+  const response = await api.post(
+    "/auth/login",
+    formData,
+    {
+      withCredentials: true,
+    }
+  );
 
-private String email;
+  // Save logged-in user information only.
+  // JWT is stored securely by the backend
+  // in an HttpOnly cookie.
+  localStorage.setItem(
+    "user",
+    JSON.stringify(response.data)
+  );
 
-private String phone;
+  // Go to dashboard
+  navigate("/dashboard");
 
-@NotBlank(message = "Password is required")
-@Size(
-        min = 8,
-        message = "Password must be at least 8 characters long"
-)
-private String password;
-
-public RegisterRequest() {
+} catch (err) {
+  setError(
+    err.response?.data?.error ||
+    "Login failed. Please check your credentials."
+  );
+} finally {
+  setLoading(false);
 }
 
-public RegisterRequest(
-        String firstName,
-        String lastName,
-        String email,
-        String phone,
-        String password) {
 
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.email = email;
-    this.phone = phone;
-    this.password = password;
+};
+
+return ( <div className="auth-container"> <div className="auth-card">
+
+
+    <h1>Welcome Back</h1>
+
+    <p className="auth-subtitle">
+      Login to your Contact Management System
+    </p>
+
+    {error && (
+      <div className="error-message">
+        {error}
+      </div>
+    )}
+
+    <form onSubmit={handleSubmit}>
+
+      <div className="form-group">
+        <label>Email or Phone</label>
+
+        <input
+          type="text"
+          name="identifier"
+          value={formData.identifier}
+          onChange={handleChange}
+          placeholder="Enter your email or phone"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Password</label>
+
+        <input
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="Enter your password"
+          required
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="auth-button"
+        disabled={loading}
+      >
+        {loading ? "Logging in..." : "Login"}
+      </button>
+
+    </form>
+
+    <p className="auth-footer">
+      Don't have an account?{" "}
+      <Link to="/register">
+        Register here
+      </Link>
+    </p>
+
+  </div>
+</div>
+
+
+);
 }
 
-public String getFirstName() {
-    return firstName;
-}
-
-public void setFirstName(String firstName) {
-    this.firstName = firstName;
-}
-
-public String getLastName() {
-    return lastName;
-}
-
-public void setLastName(String lastName) {
-    this.lastName = lastName;
-}
-
-public String getEmail() {
-    return email;
-}
-
-public void setEmail(String email) {
-    this.email = email;
-}
-
-public String getPhone() {
-    return phone;
-}
-
-public void setPhone(String phone) {
-    this.phone = phone;
-}
-
-public String getPassword() {
-    return password;
-}
-
-public void setPassword(String password) {
-    this.password = password;
-}
-
-}
+export default Login;

@@ -20,105 +20,94 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter) {
 
-public SecurityConfig(
-        JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
-    this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-@Bean
-public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-}
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http) throws Exception {
 
-@Bean
-public SecurityFilterChain securityFilterChain(
-        HttpSecurity http) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(
+                        corsConfigurationSource()
+                ))
 
-    http
-            // Enable CORS
-            .cors(cors -> cors.configurationSource(
-                    corsConfigurationSource()
-            ))
+                .csrf(csrf -> csrf.disable())
 
-            // Disable CSRF
-            .csrf(csrf -> csrf.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
 
-            // Disable default authentication
-            .httpBasic(httpBasic -> httpBasic.disable())
-            .formLogin(formLogin -> formLogin.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
 
-            // JWT is stateless
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(
-                            SessionCreationPolicy.STATELESS
-                    )
-            )
+                .authorizeHttpRequests(auth -> auth
 
-            // Authorization rules
-            .authorizeHttpRequests(auth -> auth
+                        // Public authentication endpoints
+                        .requestMatchers(
+                                "/api/auth/register",
+                                "/api/auth/login"
+                        ).permitAll()
 
-                    // Register and Login are public
-                    .requestMatchers(
-                            "/api/auth/register",
-                            "/api/auth/login"
-                    ).permitAll()
+                        // All other endpoints require authentication
+                        .anyRequest().authenticated()
+                )
 
-                    // Everything else requires JWT
-                    .anyRequest().authenticated()
-            )
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
-            // JWT filter
-            .addFilterBefore(
-                    jwtAuthenticationFilter,
-                    UsernamePasswordAuthenticationFilter.class
-            );
+        return http.build();
+    }
 
-    return http.build();
-}
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
 
-@Bean
-public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration =
+                new CorsConfiguration();
 
-    CorsConfiguration configuration =
-            new CorsConfiguration();
+        configuration.setAllowedOrigins(
+                List.of("http://localhost:5173")
+        );
 
-    // React frontend
-    configuration.setAllowedOrigins(
-            List.of("http://localhost:5173")
-    );
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
 
-    // Allowed HTTP methods
-    configuration.setAllowedMethods(
-            List.of(
-                    "GET",
-                    "POST",
-                    "PUT",
-                    "DELETE",
-                    "OPTIONS"
-            )
-    );
+        configuration.setAllowedHeaders(
+                List.of("*")
+        );
 
-    // Allow all request headers
-    configuration.setAllowedHeaders(
-            List.of("*")
-    );
+        // Required for cookies
+        configuration.setAllowCredentials(true);
 
-    // Allow Authorization header / credentials
-    configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
-    UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
 
-    source.registerCorsConfiguration(
-            "/**",
-            configuration
-    );
-
-    return source;
-}
-
+        return source;
+    }
 }
