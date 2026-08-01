@@ -1,39 +1,47 @@
 package backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class ChangePasswordRequest {
 
-    @NotBlank(message = "Current password is required")
-    private String currentPassword;
 
-    @NotBlank(message = "New password is required")
-    private String newPassword;
+@NotBlank(message = "Current password is required")
+private String currentPassword;
 
-    public ChangePasswordRequest() {
-    }
+@NotBlank(message = "New password is required")
+@Size(
+        min = 8,
+        message = "New password must be at least 8 characters long"
+)
+private String newPassword;
 
-    public ChangePasswordRequest(
-            String currentPassword,
-            String newPassword) {
+public ChangePasswordRequest() {
+}
 
-        this.currentPassword = currentPassword;
-        this.newPassword = newPassword;
-    }
+public ChangePasswordRequest(
+        String currentPassword,
+        String newPassword) {
 
-    public String getCurrentPassword() {
-        return currentPassword;
-    }
+    this.currentPassword = currentPassword;
+    this.newPassword = newPassword;
+}
 
-    public void setCurrentPassword(String currentPassword) {
-        this.currentPassword = currentPassword;
-    }
+public String getCurrentPassword() {
+    return currentPassword;
+}
 
-    public String getNewPassword() {
-        return newPassword;
-    }
+public void setCurrentPassword(String currentPassword) {
+    this.currentPassword = currentPassword;
+}
 
-    public void setNewPassword(String newPassword) {
-        this.newPassword = newPassword;
-    }
+public String getNewPassword() {
+    return newPassword;
+}
+
+public void setNewPassword(String newPassword) {
+    this.newPassword = newPassword;
+}
+
+
 }
