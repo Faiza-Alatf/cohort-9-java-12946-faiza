@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -27,15 +28,23 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await api.post("/auth/login", formData);
+      const response = await api.post(
+        "/auth/login",
+        formData
+      );
 
-      // Save JWT token
-      localStorage.setItem("token", response.data.token);
+      // Save JWT token for authenticated API requests
+      localStorage.setItem(
+        "token",
+        response.data.token
+      );
 
-      // Save logged-in user
+      // Save logged-in user data without JWT token
+      const { token, ...userData } = response.data;
+
       localStorage.setItem(
         "user",
-        JSON.stringify(response.data)
+        JSON.stringify(userData)
       );
 
       // Go to dashboard
@@ -118,3 +127,4 @@ function Login() {
 }
 
 export default Login;
+
