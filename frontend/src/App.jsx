@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter,
   Routes,
@@ -16,7 +17,6 @@ import Profile from "./pages/Profile";
 function App() {
   return (
     <BrowserRouter>
-
       <Routes>
 
         {/* Default route */}
@@ -47,38 +47,28 @@ function App() {
           element={<Dashboard />}
         />
 
-        {/* Future contact routes */}
-       <Route
-  path="/contacts/new"
-  element={<AddContact />}
-/>
+        {/* Contact routes */}
+        <Route
+          path="/contacts/new"
+          element={<AddContact />}
+        />
 
         <Route
-  path="/contacts/:id"
-  element={<ContactDetails />}
-/>
-<Route
-  path="/dashboard"
-  element={<Dashboard />}
-/>
+          path="/contacts/:id"
+          element={<ContactDetails />}
+        />
 
-<Route
-  path="/contacts/new"
-  element={<AddContact />}
-/>
+        <Route
+          path="/contacts/:id/edit"
+          element={<EditContact />}
+        />
 
-<Route
-  path="/contacts/:id"
-  element={<ContactDetails />}
-/>
-<Route
-  path="/profile"
-  element={<Profile />}
-/>
-<Route
-  path="/contacts/:id/edit"
-  element={<EditContact />}
-/>
+        {/* Profile */}
+        <Route
+          path="/profile"
+          element={<Profile />}
+        />
+
         {/* Unknown routes */}
         <Route
           path="*"
@@ -91,9 +81,9 @@ function App() {
         />
 
       </Routes>
-
     </BrowserRouter>
   );
 }
 
 export default App;
+
