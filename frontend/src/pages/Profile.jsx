@@ -6,7 +6,26 @@ import api from "../services/api";
 function Profile() {
   const navigate = useNavigate();
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  let user = null;
+
+  try {
+    const storedUser = localStorage.getItem("user");
+
+    if (storedUser) {
+      user = JSON.parse(storedUser);
+    }
+  } catch (error) {
+    console.error(
+      "Failed to parse user data from localStorage:",
+      error
+    );
+
+    // Remove corrupted user data
+    localStorage.removeItem("user");
+
+    // Redirect to login
+    navigate("/login", { replace: true });
+  }
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
@@ -34,20 +53,32 @@ function Profile() {
     setSuccess("");
 
     // Check if new password and confirm password match
-    if (formData.newPassword !== formData.confirmPassword) {
-      setError("New password and confirm password do not match.");
+    if (
+      formData.newPassword !==
+      formData.confirmPassword
+    ) {
+      setError(
+        "New password and confirm password do not match."
+      );
       return;
     }
 
     setLoading(true);
 
     try {
-      await api.put("/auth/change-password", {
-        currentPassword: formData.currentPassword,
-        newPassword: formData.newPassword,
-      });
+      await api.put(
+        "/auth/change-password",
+        {
+          currentPassword:
+            formData.currentPassword,
+          newPassword:
+            formData.newPassword,
+        }
+      );
 
-      setSuccess("Password changed successfully.");
+      setSuccess(
+        "Password changed successfully."
+      );
 
       setFormData({
         currentPassword: "",
@@ -101,7 +132,9 @@ function Profile() {
 
         <button
           className="back-button"
-          onClick={() => navigate("/dashboard")}
+          onClick={() =>
+            navigate("/dashboard")
+          }
         >
           ← Back to Contacts
         </button>
@@ -111,12 +144,15 @@ function Profile() {
           <div className="profile-header">
 
             <div className="profile-avatar">
-              {user?.firstName?.charAt(0)?.toUpperCase()}
+              {user?.firstName
+                ?.charAt(0)
+                ?.toUpperCase()}
             </div>
 
             <div>
               <h2>
-                {user?.firstName} {user?.lastName}
+                {user?.firstName}{" "}
+                {user?.lastName}
               </h2>
 
               <p>
@@ -196,16 +232,22 @@ function Profile() {
 
               <h3>Change Password</h3>
 
-              <form onSubmit={handleChangePassword}>
+              <form
+                onSubmit={handleChangePassword}
+              >
 
                 <div className="form-group">
 
-                  <label>Current Password</label>
+                  <label>
+                    Current Password
+                  </label>
 
                   <input
                     type="password"
                     name="currentPassword"
-                    value={formData.currentPassword}
+                    value={
+                      formData.currentPassword
+                    }
                     onChange={handleChange}
                     required
                   />
@@ -214,12 +256,16 @@ function Profile() {
 
                 <div className="form-group">
 
-                  <label>New Password</label>
+                  <label>
+                    New Password
+                  </label>
 
                   <input
                     type="password"
                     name="newPassword"
-                    value={formData.newPassword}
+                    value={
+                      formData.newPassword
+                    }
                     onChange={handleChange}
                     required
                   />
@@ -228,12 +274,16 @@ function Profile() {
 
                 <div className="form-group">
 
-                  <label>Confirm New Password</label>
+                  <label>
+                    Confirm New Password
+                  </label>
 
                   <input
                     type="password"
                     name="confirmPassword"
-                    value={formData.confirmPassword}
+                    value={
+                      formData.confirmPassword
+                    }
                     onChange={handleChange}
                     required
                   />
@@ -279,3 +329,4 @@ function Profile() {
 }
 
 export default Profile;
+
