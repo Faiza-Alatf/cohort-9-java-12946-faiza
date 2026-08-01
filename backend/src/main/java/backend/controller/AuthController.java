@@ -16,100 +16,96 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(AuthController.class);
 
-private static final Logger log =
-        LoggerFactory.getLogger(AuthController.class);
+    private final AuthService authService;
+    private final JwtService jwtService;
 
-private final AuthService authService;
-private final JwtService jwtService;
+    public AuthController(
+            AuthService authService,
+            JwtService jwtService) {
 
-public AuthController(
-        AuthService authService,
-        JwtService jwtService) {
+        this.authService = authService;
+        this.jwtService = jwtService;
+    }
 
-    this.authService = authService;
-    this.jwtService = jwtService;
-}
+    // Registration API
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request) {
 
-// Registration API
-@PostMapping("/register")
-public ResponseEntity<AuthResponse> register(
-        @Valid @RequestBody RegisterRequest request) {
+        log.info("Registration API request received");
 
-    log.info("Registration API request received");
+        User user = authService.register(request);
 
-    User user = authService.register(request);
+        String identifier = user.getEmail() != null
+                ? user.getEmail()
+                : user.getPhone();
 
-    String identifier = user.getEmail() != null
-            ? user.getEmail()
-            : user.getPhone();
+        String token = jwtService.generateToken(identifier);
 
-    String token = jwtService.generateToken(identifier);
+        log.info("Registration API completed successfully");
 
-    log.info("Registration API completed successfully");
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(toAuthResponse(user, token));
+    }
 
-    return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(toAuthResponse(user, token));
-}
+    // Login API
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request) {
 
-// Login API
-@PostMapping("/login")
-public ResponseEntity<AuthResponse> login(
-        @Valid @RequestBody LoginRequest request) {
+        log.info("Login API request received");
 
-    log.info("Login API request received");
+        User user = authService.login(request);
 
-    User user = authService.login(request);
+        String identifier = user.getEmail() != null
+                ? user.getEmail()
+                : user.getPhone();
 
-    String identifier = user.getEmail() != null
-            ? user.getEmail()
-            : user.getPhone();
+        String token = jwtService.generateToken(identifier);
 
-    String token = jwtService.generateToken(identifier);
+        log.info("Login API completed successfully");
 
-    log.info("Login API completed successfully");
+        return ResponseEntity.ok(
+                toAuthResponse(user, token)
+        );
+    }
 
-    return ResponseEntity.ok(
-            toAuthResponse(user, token)
-    );
-}
+    // Change Password API
+    // Requires a valid JWT token
+    @PutMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            java.security.Principal principal) {
 
-// Change Password API
-// Requires a valid JWT token
-@PutMapping("/change-password")
-public ResponseEntity<Void> changePassword(
-        @Valid @RequestBody ChangePasswordRequest request,
-        java.security.Principal principal) {
+        log.info("Change password API request received");
 
-    log.info("Change password API request received");
+        authService.changePassword(
+                principal.getName(),
+                request
+        );
 
-    authService.changePassword(
-            principal.getName(),
-            request
-    );
+        log.info("Change password API completed successfully");
 
-    log.info("Change password API completed successfully");
+        return ResponseEntity.noContent().build();
+    }
 
-    return ResponseEntity.noContent().build();
-}
+    private AuthResponse toAuthResponse(
+            User user,
+            String token) {
 
-private AuthResponse toAuthResponse(
-        User user,
-        String token) {
-
-    return new AuthResponse(
-            user.getId(),
-            user.getFirstName(),
-            user.getLastName(),
-            user.getEmail(),
-            user.getPhone(),
-            token
-    );
-}
-
-
+        return new AuthResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhone(),
+                token
+        );
+    }
 }
