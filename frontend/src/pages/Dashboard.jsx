@@ -17,10 +17,24 @@ const [error, setError] = useState("");
 
 const pageSize = 6;
 
+// Safely remove session data from localStorage
+const clearSession = () => {
+try {
+localStorage.removeItem("token");
+localStorage.removeItem("user");
+} catch (error) {
+console.error(
+"Unable to clear session data:",
+error
+);
+}
+};
+
 // Safely read logged-in user from localStorage
 const getUserFromStorage = () => {
 try {
 const storedUser = localStorage.getItem("user");
+
 
   if (!storedUser) {
     return null;
@@ -29,10 +43,13 @@ const storedUser = localStorage.getItem("user");
   return JSON.parse(storedUser);
 
 } catch (error) {
-  console.error("Unable to parse stored user data:", error);
+  console.error(
+    "Unable to parse stored user data:",
+    error
+  );
 
-  // Remove corrupted user data
-  localStorage.removeItem("user");
+  // Safely remove corrupted user data
+  clearSession();
 
   return null;
 }
@@ -51,7 +68,6 @@ try {
 setLoading(true);
 setError("");
 
-
   const response = await api.get("/contacts", {
     params: {
       search: search,
@@ -66,9 +82,7 @@ setError("");
 
 } catch (err) {
   if (err.response?.status === 401) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
+    clearSession();
     navigate("/login");
     return;
   }
@@ -91,16 +105,12 @@ setPage(0);
 };
 
 const handleLogout = () => {
-localStorage.removeItem("token");
-localStorage.removeItem("user");
-
-
+clearSession();
 navigate("/login");
-
-
 };
 
 return ( <div className="dashboard">
+
 
   {/* =========================
       DASHBOARD HEADER
