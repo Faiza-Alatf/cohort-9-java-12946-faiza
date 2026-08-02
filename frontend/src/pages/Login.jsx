@@ -33,14 +33,8 @@ function Login() {
         formData
       );
 
-      // Save JWT token for authenticated API requests
-      localStorage.setItem(
-        "token",
-        response.data.token
-      );
-
-      // Save logged-in user data without JWT token
-      const { token, ...userData } = response.data;
+      // Save logged-in user data
+      const userData = response.data;
 
       localStorage.setItem(
         "user",
