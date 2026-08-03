@@ -17,11 +17,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/contacts")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ContactController {
 
     private static final Logger log =
             LoggerFactory.getLogger(ContactController.class);
+
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final ContactService contactService;
 
@@ -42,6 +44,11 @@ public class ContactController {
         ContactResponse response =
                 contactService.createContact(request, userEmail);
 
+        log.info(
+                "Contact created successfully. Contact ID: {}",
+                response.getId()
+        );
+
         log.info("Create contact API completed successfully");
 
         return ResponseEntity
@@ -56,6 +63,19 @@ public class ContactController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Authentication authentication) {
+
+        if (page < 0) {
+            throw new IllegalArgumentException(
+                    "Page number cannot be negative"
+            );
+        }
+
+        if (size < 1 || size > MAX_PAGE_SIZE) {
+            throw new IllegalArgumentException(
+                    "Page size must be between 1 and "
+                            + MAX_PAGE_SIZE
+            );
+        }
 
         log.info(
                 "Get contacts API request received. Page: {}, Size: {}",
