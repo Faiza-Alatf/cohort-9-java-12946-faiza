@@ -10,102 +10,179 @@ import backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(
+origins = "http://localhost:5173",
+allowCredentials = "true"
+)
 public class AuthController {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(AuthController.class);
 
-    private final AuthService authService;
-    private final JwtService jwtService;
+private static final Logger log =
+        LoggerFactory.getLogger(AuthController.class);
 
-    public AuthController(
-            AuthService authService,
-            JwtService jwtService) {
+private final AuthService authService;
+private final JwtService jwtService;
 
-        this.authService = authService;
-        this.jwtService = jwtService;
-    }
+@Value("${app.cookie.secure:true}")
+private boolean secureCookie;
 
-    // Registration API
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
-            @Valid @RequestBody RegisterRequest request) {
+public AuthController(
+        AuthService authService,
+        JwtService jwtService) {
 
-        log.info("Registration API request received");
+    this.authService = authService;
+    this.jwtService = jwtService;
+}
 
-        User user = authService.register(request);
+// Registration API
+@PostMapping("/register")
+public ResponseEntity<AuthResponse> register(
+        @Valid @RequestBody RegisterRequest request) {
 
-        String identifier = user.getEmail() != null
-                ? user.getEmail()
-                : user.getPhone();
+    log.info("Registration API request received");
 
-        String token = jwtService.generateToken(identifier);
+    User user = authService.register(request);
 
-        log.info("Registration API completed successfully");
+    String identifier = user.getEmail() != null
+            ? user.getEmail()
+            : user.getPhone();
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(toAuthResponse(user, token));
-    }
+    String token =
+            jwtService.generateToken(identifier);
 
-    // Login API
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
-            @Valid @RequestBody LoginRequest request) {
+    log.info(
+            "Registration API completed successfully"
+    );
 
-        log.info("Login API request received");
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .header(
+                    HttpHeaders.SET_COOKIE,
+                    createJwtCookie(token).toString()
+            )
+            .body(toAuthResponse(user));
+}
 
-        User user = authService.login(request);
+// Login API
+@PostMapping("/login")
+public ResponseEntity<AuthResponse> login(
+        @Valid @RequestBody LoginRequest request) {
 
-        String identifier = user.getEmail() != null
-                ? user.getEmail()
-                : user.getPhone();
+    log.info("Login API request received");
 
-        String token = jwtService.generateToken(identifier);
+    User user = authService.login(request);
 
-        log.info("Login API completed successfully");
+    String identifier = user.getEmail() != null
+            ? user.getEmail()
+            : user.getPhone();
 
-        return ResponseEntity.ok(
-                toAuthResponse(user, token)
-        );
-    }
+    String token =
+            jwtService.generateToken(identifier);
 
-    // Change Password API
-    // Requires a valid JWT token
-    @PutMapping("/change-password")
-    public ResponseEntity<Void> changePassword(
-            @Valid @RequestBody ChangePasswordRequest request,
-            java.security.Principal principal) {
+    log.info(
+            "Login API completed successfully"
+    );
 
-        log.info("Change password API request received");
+    return ResponseEntity
+            .ok()
+            .header(
+                    HttpHeaders.SET_COOKIE,
+                    createJwtCookie(token).toString()
+            )
+            .body(toAuthResponse(user));
+}
 
-        authService.changePassword(
-                principal.getName(),
-                request
-        );
+// Change Password API
+// Requires a valid JWT token
+@PutMapping("/change-password")
+public ResponseEntity<Void> changePassword(
+        @Valid @RequestBody ChangePasswordRequest request,
+        Principal principal) {
 
-        log.info("Change password API completed successfully");
+    log.info(
+            "Change password API request received"
+    );
 
-        return ResponseEntity.noContent().build();
-    }
+    authService.changePassword(
+            principal.getName(),
+            request
+    );
 
-    private AuthResponse toAuthResponse(
-            User user,
-            String token) {
+    log.info(
+            "Change password API completed successfully"
+    );
 
-        return new AuthResponse(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getPhone(),
-                token
-        );
-    }
+    return ResponseEntity.noContent().build();
+}
+
+// Logout API
+@PostMapping("/logout")
+public ResponseEntity<Void> logout() {
+
+    log.info("Logout API request received");
+
+    log.info(
+            "Logout API completed successfully"
+    );
+
+    return ResponseEntity
+            .noContent()
+            .header(
+                    HttpHeaders.SET_COOKIE,
+                    createLogoutCookie().toString()
+            )
+            .build();
+}
+
+// Create JWT cookie for login/register
+private ResponseCookie createJwtCookie(
+        String token) {
+
+    return ResponseCookie
+            .from("jwt", token)
+            .httpOnly(true)
+            .secure(secureCookie)
+            .path("/")
+            .sameSite("Lax")
+            .maxAge(24 * 60 * 60)
+            .build();
+}
+
+// Clear JWT cookie for logout
+private ResponseCookie createLogoutCookie() {
+
+    return ResponseCookie
+            .from("jwt", "")
+            .httpOnly(true)
+            .secure(secureCookie)
+            .path("/")
+            .sameSite("Lax")
+            .maxAge(0)
+            .build();
+}
+
+private AuthResponse toAuthResponse(
+        User user) {
+
+    return new AuthResponse(
+            user.getId(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getEmail(),
+            user.getPhone(),
+            null
+    );
+}
+
 }
