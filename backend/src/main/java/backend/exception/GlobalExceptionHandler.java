@@ -5,9 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,193 +20,289 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // Contact or User not found
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleResourceNotFound(
-            ResourceNotFoundException ex) {
+private static final Logger logger =
+        LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-        log.warn("Resource not found: {}", ex.getMessage());
+// Contact or User not found
+@ExceptionHandler(ResourceNotFoundException.class)
+public ResponseEntity<Map<String, String>> handleResourceNotFound(
+        ResourceNotFoundException ex) {
 
-        Map<String, String> response = new HashMap<>();
-        response.put("error", ex.getMessage());
+    logger.warn("Resource not found: {}", ex.getMessage());
 
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
-    }
+    Map<String, String> response = new HashMap<>();
+    response.put("error", ex.getMessage());
 
-    // Unauthorized access to another user's contact
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Map<String, String>> handleUnauthorized(
-            UnauthorizedException ex) {
+    return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(response);
+}
 
-        log.warn("Unauthorized access attempt: {}", ex.getMessage());
+// Unauthorized access to another user's contact
+@ExceptionHandler(UnauthorizedException.class)
+public ResponseEntity<Map<String, String>> handleUnauthorized(
+        UnauthorizedException ex) {
 
-        Map<String, String> response = new HashMap<>();
-        response.put("error", ex.getMessage());
+    logger.warn("Unauthorized access attempt: {}", ex.getMessage());
 
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(response);
-    }
+    Map<String, String> response = new HashMap<>();
+    response.put("error", ex.getMessage());
 
-    // Duplicate email or phone detected by application checks
-    @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<Map<String, String>> handleDuplicateResource(
-            DuplicateResourceException ex) {
+    return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(response);
+}
 
-        log.warn("Duplicate resource detected: {}", ex.getMessage());
+// Duplicate email or phone detected by application checks
+@ExceptionHandler(DuplicateResourceException.class)
+public ResponseEntity<Map<String, String>> handleDuplicateResource(
+        DuplicateResourceException ex) {
 
-        Map<String, String> response = new HashMap<>();
-        response.put("error", ex.getMessage());
+    logger.warn(
+            "Duplicate resource detected: {}",
+            ex.getMessage()
+    );
+
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            "Email or phone number is already registered"
+    );
+
+    return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(response);
+}
+
+// Database unique constraint violation
+@ExceptionHandler(DataIntegrityViolationException.class)
+public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
+        DataIntegrityViolationException ex) {
+
+    logger.error(
+            "Database integrity violation occurred",
+            ex
+    );
+
+    Map<String, String> response = new HashMap<>();
+
+    String message = ex.getMostSpecificCause()
+            .getMessage();
+
+    if (message != null
+            && (message.contains("uk_users_email")
+            || message.contains("uk_users_phone"))) {
+
+        response.put(
+                "error",
+                "Email or phone number is already registered"
+        );
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(response);
     }
 
-    // Database unique constraint violation
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
-            DataIntegrityViolationException ex) {
+    response.put(
+            "error",
+            "A database error occurred"
+    );
 
-        log.error(
-                "Database integrity violation occurred",
-                ex
-        );
+    return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(response);
+}
 
-        Map<String, String> response = new HashMap<>();
+// Invalid login credentials
+@ExceptionHandler(InvalidCredentialsException.class)
+public ResponseEntity<Map<String, String>> handleInvalidCredentials(
+        InvalidCredentialsException ex) {
 
-        String message = ex.getMostSpecificCause()
-                .getMessage();
+    logger.warn(
+            "Authentication failure: {}",
+            ex.getMessage()
+    );
 
-        if (message != null
-                && message.contains("uk_users_email")) {
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            "Invalid email/phone or password"
+    );
 
-            response.put(
-                    "error",
-                    "Email is already registered"
-            );
+    return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(response);
+}
 
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(response);
-        }
+// Validation errors from @Valid
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<Map<String, String>> handleValidationException(
+        MethodArgumentNotValidException ex) {
 
-        if (message != null
-                && message.contains("uk_users_phone")) {
+    String validationMessage = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .findFirst()
+            .map(error -> error.getDefaultMessage())
+            .orElse("Invalid request data");
 
-            response.put(
-                    "error",
-                    "Phone number is already registered"
-            );
+    logger.warn(
+            "Request validation failed: {}",
+            validationMessage
+    );
 
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(response);
-        }
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            validationMessage
+    );
 
-        response.put(
-                "error",
-                "A database error occurred"
-        );
+    return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(response);
+}
 
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(response);
-    }
+// Invalid registration request
+@ExceptionHandler(IllegalArgumentException.class)
+public ResponseEntity<Map<String, String>> handleIllegalArgument(
+        IllegalArgumentException ex) {
 
-    // Invalid login credentials
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidCredentials(
-            InvalidCredentialsException ex) {
+    logger.warn(
+            "Invalid request argument: {}",
+            ex.getMessage()
+    );
 
-        log.warn(
-                "Authentication failure: {}",
-                ex.getMessage()
-        );
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            ex.getMessage()
+    );
 
-        Map<String, String> response = new HashMap<>();
-        response.put(
-                "error",
-                ex.getMessage()
-        );
+    return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(response);
+}
 
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(response);
-    }
+// Malformed or missing JSON request body
+@ExceptionHandler(HttpMessageNotReadableException.class)
+public ResponseEntity<Map<String, String>> handleMessageNotReadable(
+        HttpMessageNotReadableException ex) {
 
-    // Validation errors from @Valid
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationException(
-            MethodArgumentNotValidException ex) {
+    logger.warn(
+            "Invalid or malformed request body"
+    );
 
-        String validationMessage = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .findFirst()
-                .map(error -> error.getDefaultMessage())
-                .orElse("Invalid request data");
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            "Invalid or malformed request body"
+    );
 
-        log.warn(
-                "Request validation failed: {}",
-                validationMessage
-        );
+    return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(response);
+}
 
-        Map<String, String> response = new HashMap<>();
-        response.put(
-                "error",
-                validationMessage
-        );
+// Invalid path variable or query parameter type
+@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+public ResponseEntity<Map<String, String>> handleTypeMismatch(
+        MethodArgumentTypeMismatchException ex) {
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
-    }
+    logger.warn(
+            "Invalid request parameter"
+    );
 
-    // Invalid registration or request arguments
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(
-            IllegalArgumentException ex) {
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            "Invalid value for request parameter"
+    );
 
-        log.warn(
-                "Invalid request argument: {}",
-                ex.getMessage()
-        );
+    return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(response);
+}
 
-        Map<String, String> response = new HashMap<>();
-        response.put(
-                "error",
-                ex.getMessage()
-        );
+// Preserve status from ResponseStatusException
+@ExceptionHandler(ResponseStatusException.class)
+public ResponseEntity<Map<String, String>> handleResponseStatusException(
+        ResponseStatusException ex) {
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
-    }
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            ex.getReason() != null
+                    ? ex.getReason()
+                    : "Request failed"
+    );
 
-    // Unexpected errors
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGeneralException(
-            Exception ex) {
+    return ResponseEntity
+            .status(ex.getStatusCode())
+            .body(response);
+}
 
-        log.error(
-                "Unexpected application error occurred",
-                ex
-        );
+// Preserve status from Spring ErrorResponseException
+@ExceptionHandler(ErrorResponseException.class)
+public ResponseEntity<Map<String, String>> handleErrorResponseException(
+        ErrorResponseException ex) {
 
-        Map<String, String> response = new HashMap<>();
-        response.put(
-                "error",
-                "An unexpected error occurred"
-        );
+    String detail = ex.getBody().getDetail();
 
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(response);
-    }
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            detail != null
+                    ? detail
+                    : "Request failed"
+    );
+
+    return ResponseEntity
+            .status(ex.getStatusCode())
+            .body(response);
+}
+
+// Access denied
+@ExceptionHandler(AccessDeniedException.class)
+public ResponseEntity<Map<String, String>> handleAccessDenied(
+        AccessDeniedException ex) {
+
+    logger.warn(
+            "Access denied: {}",
+            ex.getMessage()
+    );
+
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            "Access denied"
+    );
+
+    return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(response);
+}
+
+// Unexpected errors
+@ExceptionHandler(Exception.class)
+public ResponseEntity<Map<String, String>> handleGeneralException(
+        Exception ex) {
+
+    logger.error(
+            "Unexpected error occurred while processing request",
+            ex
+    );
+
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            "An unexpected error occurred"
+    );
+
+    return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(response);
+}
+
+
 }
