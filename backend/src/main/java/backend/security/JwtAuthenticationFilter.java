@@ -23,7 +23,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.jwtService = jwtService;
     }
 
-    // Do not apply JWT filter to register and login
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
 
@@ -42,25 +41,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        // Check if Authorization header exists
+        System.out.println("JWT Filter - Request: "
+                + request.getMethod()
+                + " "
+                + request.getRequestURI());
+
+        System.out.println("JWT Filter - Authorization Header Present: "
+                + (authHeader != null));
+
         if (authHeader == null
                 || !authHeader.startsWith("Bearer ")) {
+
+            System.out.println(
+                    "JWT Filter - No valid Bearer token found"
+            );
 
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Extract JWT token
         String token = authHeader.substring(7);
 
         try {
 
-            // Parse and validate token only once
             Claims claims = jwtService.getClaims(token);
 
-            // Extract identifier from parsed claims
             String identifier =
                     jwtService.extractIdentifier(claims);
+
+            System.out.println(
+                    "JWT Filter - Token Valid for: "
+                            + identifier
+            );
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
@@ -78,9 +90,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .getContext()
                     .setAuthentication(authentication);
 
+            System.out.println(
+                    "JWT Filter - Authentication Set Successfully"
+            );
+
         } catch (Exception e) {
 
-            // Clear authentication for invalid or expired token
+            System.out.println(
+                    "JWT Filter - Token Validation FAILED: "
+                            + e.getClass().getSimpleName()
+            );
+
+            System.out.println(
+                    "JWT Filter - Error: "
+                            + e.getMessage()
+            );
+
             SecurityContextHolder.clearContext();
         }
 
