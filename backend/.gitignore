@@ -1,5 +1,1 @@
-# Application logs
-
-backend/logs/
-HELP.md
-target/
+backend/.gitignore
