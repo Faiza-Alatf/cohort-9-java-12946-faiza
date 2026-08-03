@@ -30,21 +30,16 @@ setLoading(true);
 try {
   const response = await api.post(
     "/auth/login",
-    formData,
-    {
-      withCredentials: true,
-    }
+    formData
   );
 
-  // Save logged-in user information only.
-  // JWT is stored securely by the backend
-  // in an HttpOnly cookie.
+  // Store only user information.
+  // JWT is stored securely in an HttpOnly cookie.
   localStorage.setItem(
     "user",
     JSON.stringify(response.data)
   );
 
-  // Go to dashboard
   navigate("/dashboard");
 
 } catch (err) {
@@ -60,7 +55,6 @@ try {
 };
 
 return ( <div className="auth-container"> <div className="auth-card">
-
 
     <h1>Welcome Back</h1>
 
@@ -107,7 +101,9 @@ return ( <div className="auth-container"> <div className="auth-card">
         className="auth-button"
         disabled={loading}
       >
-        {loading ? "Logging in..." : "Login"}
+        {loading
+          ? "Logging in..."
+          : "Login"}
       </button>
 
     </form>

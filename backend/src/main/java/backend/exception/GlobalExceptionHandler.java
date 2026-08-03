@@ -29,6 +29,8 @@ private static final Logger logger =
 public ResponseEntity<Map<String, String>> handleResourceNotFound(
         ResourceNotFoundException ex) {
 
+    logger.warn("Resource not found: {}", ex.getMessage());
+
     Map<String, String> response = new HashMap<>();
     response.put("error", ex.getMessage());
 
@@ -42,6 +44,8 @@ public ResponseEntity<Map<String, String>> handleResourceNotFound(
 public ResponseEntity<Map<String, String>> handleUnauthorized(
         UnauthorizedException ex) {
 
+    logger.warn("Unauthorized access attempt: {}", ex.getMessage());
+
     Map<String, String> response = new HashMap<>();
     response.put("error", ex.getMessage());
 
@@ -54,6 +58,11 @@ public ResponseEntity<Map<String, String>> handleUnauthorized(
 @ExceptionHandler(DuplicateResourceException.class)
 public ResponseEntity<Map<String, String>> handleDuplicateResource(
         DuplicateResourceException ex) {
+
+    logger.warn(
+            "Duplicate resource detected: {}",
+            ex.getMessage()
+    );
 
     Map<String, String> response = new HashMap<>();
     response.put(
@@ -82,20 +91,8 @@ public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
             .getMessage();
 
     if (message != null
-            && message.contains("uk_users_email")) {
-
-        response.put(
-                "error",
-                "Email or phone number is already registered"
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(response);
-    }
-
-    if (message != null
-            && message.contains("uk_users_phone")) {
+            && (message.contains("uk_users_email")
+            || message.contains("uk_users_phone"))) {
 
         response.put(
                 "error",
@@ -122,6 +119,11 @@ public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
 public ResponseEntity<Map<String, String>> handleInvalidCredentials(
         InvalidCredentialsException ex) {
 
+    logger.warn(
+            "Authentication failure: {}",
+            ex.getMessage()
+    );
+
     Map<String, String> response = new HashMap<>();
     response.put(
             "error",
@@ -138,18 +140,23 @@ public ResponseEntity<Map<String, String>> handleInvalidCredentials(
 public ResponseEntity<Map<String, String>> handleValidationException(
         MethodArgumentNotValidException ex) {
 
-    Map<String, String> response = new HashMap<>();
-
-    ex.getBindingResult()
+    String validationMessage = ex.getBindingResult()
             .getFieldErrors()
             .stream()
             .findFirst()
-            .ifPresent(error ->
-                    response.put(
-                            "error",
-                            error.getDefaultMessage()
-                    )
-            );
+            .map(error -> error.getDefaultMessage())
+            .orElse("Invalid request data");
+
+    logger.warn(
+            "Request validation failed: {}",
+            validationMessage
+    );
+
+    Map<String, String> response = new HashMap<>();
+    response.put(
+            "error",
+            validationMessage
+    );
 
     return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -160,6 +167,11 @@ public ResponseEntity<Map<String, String>> handleValidationException(
 @ExceptionHandler(IllegalArgumentException.class)
 public ResponseEntity<Map<String, String>> handleIllegalArgument(
         IllegalArgumentException ex) {
+
+    logger.warn(
+            "Invalid request argument: {}",
+            ex.getMessage()
+    );
 
     Map<String, String> response = new HashMap<>();
     response.put(
@@ -235,10 +247,9 @@ public ResponseEntity<Map<String, String>> handleResponseStatusException(
 public ResponseEntity<Map<String, String>> handleErrorResponseException(
         ErrorResponseException ex) {
 
-    Map<String, String> response = new HashMap<>();
-
     String detail = ex.getBody().getDetail();
 
+    Map<String, String> response = new HashMap<>();
     response.put(
             "error",
             detail != null
@@ -255,6 +266,11 @@ public ResponseEntity<Map<String, String>> handleErrorResponseException(
 @ExceptionHandler(AccessDeniedException.class)
 public ResponseEntity<Map<String, String>> handleAccessDenied(
         AccessDeniedException ex) {
+
+    logger.warn(
+            "Access denied: {}",
+            ex.getMessage()
+    );
 
     Map<String, String> response = new HashMap<>();
     response.put(

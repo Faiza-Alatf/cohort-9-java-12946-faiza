@@ -8,6 +8,8 @@ import backend.exception.ResourceNotFoundException;
 import backend.exception.UnauthorizedException;
 import backend.repository.ContactRepository;
 import backend.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,12 +18,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ContactService {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(ContactService.class);
+
     private final ContactRepository contactRepository;
     private final UserRepository userRepository;
 
     public ContactService(
             ContactRepository contactRepository,
             UserRepository userRepository) {
+
         this.contactRepository = contactRepository;
         this.userRepository = userRepository;
     }
@@ -46,6 +52,12 @@ public class ContactService {
         contact.setUser(user);
 
         Contact savedContact = contactRepository.save(contact);
+
+        log.info(
+                "Contact created successfully. Contact ID: {}, User: {}",
+                savedContact.getId(),
+                userEmail
+        );
 
         return mapToResponse(savedContact);
     }
@@ -78,6 +90,12 @@ public class ContactService {
                     );
         }
 
+        log.info(
+                "Contacts fetched successfully. User: {}, Search: {}",
+                userEmail,
+                search
+        );
+
         return contacts.map(this::mapToResponse);
     }
 
@@ -90,13 +108,26 @@ public class ContactService {
 
         Contact contact = contactRepository
                 .findById(contactId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Contact not found with id: " + contactId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Contact not found. Contact ID: {}, User: {}",
+                            contactId,
+                            userEmail
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Contact not found with id: " + contactId
+                    );
+                });
 
         if (!contact.getUser().getId().equals(user.getId())) {
+
+            log.warn(
+                    "Unauthorized contact access attempt. Contact ID: {}, User: {}",
+                    contactId,
+                    userEmail
+            );
 
             throw new UnauthorizedException(
                     "You are not authorized to access this contact"
@@ -116,13 +147,26 @@ public class ContactService {
 
         Contact contact = contactRepository
                 .findById(contactId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Contact not found with id: " + contactId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Contact update failed. Contact not found. ID: {}, User: {}",
+                            contactId,
+                            userEmail
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Contact not found with id: " + contactId
+                    );
+                });
 
         if (!contact.getUser().getId().equals(user.getId())) {
+
+            log.warn(
+                    "Unauthorized contact update attempt. Contact ID: {}, User: {}",
+                    contactId,
+                    userEmail
+            );
 
             throw new UnauthorizedException(
                     "You are not authorized to update this contact"
@@ -140,6 +184,12 @@ public class ContactService {
 
         Contact updatedContact = contactRepository.save(contact);
 
+        log.info(
+                "Contact updated successfully. Contact ID: {}, User: {}",
+                contactId,
+                userEmail
+        );
+
         return mapToResponse(updatedContact);
     }
 
@@ -152,13 +202,26 @@ public class ContactService {
 
         Contact contact = contactRepository
                 .findById(contactId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Contact not found with id: " + contactId
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.warn(
+                            "Contact deletion failed. Contact not found. ID: {}, User: {}",
+                            contactId,
+                            userEmail
+                    );
+
+                    return new ResourceNotFoundException(
+                            "Contact not found with id: " + contactId
+                    );
+                });
 
         if (!contact.getUser().getId().equals(user.getId())) {
+
+            log.warn(
+                    "Unauthorized contact deletion attempt. Contact ID: {}, User: {}",
+                    contactId,
+                    userEmail
+            );
 
             throw new UnauthorizedException(
                     "You are not authorized to delete this contact"
@@ -166,17 +229,29 @@ public class ContactService {
         }
 
         contactRepository.delete(contact);
+
+        log.info(
+                "Contact deleted successfully. Contact ID: {}, User: {}",
+                contactId,
+                userEmail
+        );
     }
 
     private User getUserByEmail(String email) {
 
         return userRepository
                 .findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found with email: " + email
-                        )
-                );
+                .orElseThrow(() -> {
+
+                    log.error(
+                            "Authenticated user not found. Email: {}",
+                            email
+                    );
+
+                    return new ResourceNotFoundException(
+                            "User not found with email: " + email
+                    );
+                });
     }
 
     private ContactResponse mapToResponse(Contact contact) {

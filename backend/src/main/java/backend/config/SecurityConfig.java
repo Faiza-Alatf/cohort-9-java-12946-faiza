@@ -23,7 +23,6 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-
 private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -160,8 +159,7 @@ public SecurityFilterChain securityFilterChain(
                     )
             )
 
-            // Add JWT filter before
-            // UsernamePasswordAuthenticationFilter
+            // Add JWT filter before UsernamePasswordAuthenticationFilter
             .addFilterBefore(
                     jwtAuthenticationFilter,
                     UsernamePasswordAuthenticationFilter.class
