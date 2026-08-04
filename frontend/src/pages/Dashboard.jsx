@@ -3,356 +3,505 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function Dashboard() {
-const navigate = useNavigate();
 
-const [contacts, setContacts] = useState([]);
-const [search, setSearch] = useState("");
-const [page, setPage] = useState(0);
+  const navigate = useNavigate();
 
-const [totalPages, setTotalPages] = useState(0);
-const [totalElements, setTotalElements] = useState(0);
+  const [contacts, setContacts] = useState([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
 
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
-const pageSize = 6;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-// Safely remove session data from localStorage
-const clearSession = () => {
-try {
-localStorage.removeItem("token");
-localStorage.removeItem("user");
-} catch (error) {
-console.error(
-"Unable to clear session data:",
-error
-);
-}
-};
-
-// Safely read logged-in user from localStorage
-const getUserFromStorage = () => {
-try {
-const storedUser = localStorage.getItem("user");
+  const pageSize = 6;
 
 
-  if (!storedUser) {
-    return null;
-  }
+  const clearSession = () => {
 
-  return JSON.parse(storedUser);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
-} catch (error) {
-  console.error(
-    "Unable to parse stored user data:",
-    error
-  );
-
-  // Safely remove corrupted user data
-  clearSession();
-
-  return null;
-}
+  };
 
 
-};
+  const getUserFromStorage = () => {
 
-const user = getUserFromStorage();
+    try {
 
-useEffect(() => {
-fetchContacts();
-}, [page, search]);
+      const storedUser =
+        localStorage.getItem("user");
 
-const fetchContacts = async () => {
-try {
-setLoading(true);
-setError("");
 
-  const response = await api.get("/contacts", {
-    params: {
-      search: search,
-      page: page,
-      size: pageSize,
-    },
-  });
+      return storedUser
+        ? JSON.parse(storedUser)
+        : null;
 
-  setContacts(response.data.content || []);
-  setTotalPages(response.data.totalPages || 0);
-  setTotalElements(response.data.totalElements || 0);
 
-} catch (err) {
-  if (err.response?.status === 401) {
+    } catch(error){
+
+      clearSession();
+
+      return null;
+
+    }
+
+  };
+
+
+  const user = getUserFromStorage();
+
+
+  useEffect(() => {
+
+    fetchContacts();
+
+  }, [page, search]);
+
+
+
+  const fetchContacts = async () => {
+
+    try {
+
+      setLoading(true);
+      setError("");
+
+
+      const response = await api.get(
+        "/contacts",
+        {
+          params:{
+            search,
+            page,
+            size:pageSize
+          }
+        }
+      );
+
+
+      setContacts(
+        response.data.content || []
+      );
+
+      setTotalPages(
+        response.data.totalPages || 0
+      );
+
+      setTotalElements(
+        response.data.totalElements || 0
+      );
+
+
+    } catch(err){
+
+
+      if(err.response?.status === 401){
+
+        clearSession();
+        navigate("/login");
+        return;
+
+      }
+
+
+      setError(
+        err.response?.data?.error ||
+        "Unable to load contacts."
+      );
+
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+
+  const handleSearch = (e)=>{
+
+    setSearch(e.target.value);
+    setPage(0);
+
+  };
+
+
+
+  const handleLogout = ()=>{
+
     clearSession();
     navigate("/login");
-    return;
-  }
 
-  setError(
-    err.response?.data?.error ||
-    "Unable to load contacts."
-  );
+  };
 
-} finally {
-  setLoading(false);
+
+
+return (
+
+<div className="dashboard">
+
+
+<header className="dashboard-header">
+
+
+<div>
+
+<h1>
+Good to see you, {user?.firstName || "User"} 👋
+</h1>
+
+
+<p>
+Manage your contacts from one place
+</p>
+
+
+</div>
+
+
+
+<div className="dashboard-actions">
+
+
+<button
+className="profile-button"
+onClick={()=>navigate("/profile")}
+>
+My Profile
+</button>
+
+
+<button
+className="logout-button"
+onClick={handleLogout}
+>
+Logout
+</button>
+
+
+</div>
+
+
+</header>
+
+
+
+<main className="dashboard-content">
+
+
+
+<div className="contacts-header">
+
+
+<div>
+
+<h2>
+Contacts
+</h2>
+
+
+<p>
+Manage your personal and professional connections
+</p>
+
+
+</div>
+
+
+
+<button
+className="add-contact-button"
+onClick={()=>navigate("/contacts/new")}
+>
++ Add Contact
+</button>
+
+
+
+</div>
+
+
+
+
+<div className="dashboard-stats">
+
+
+<div className="card stat-card">
+
+<span>
+Total Contacts
+</span>
+
+<strong>
+{totalElements}
+</strong>
+
+</div>
+
+
+</div>
+
+
+
+
+<div className="contacts-toolbar">
+
+
+<input
+
+className="search-input"
+
+type="text"
+
+placeholder="Search contacts..."
+
+value={search}
+
+onChange={handleSearch}
+
+/>
+
+
+
+</div>
+
+
+
+
+{loading && (
+
+<div className="loading-state">
+
+<p>
+Loading contacts...
+</p>
+
+</div>
+
+)}
+
+
+
+
+{error && (
+
+<div className="error-message">
+
+{error}
+
+</div>
+
+)}
+
+
+
+
+
+
+{
+!loading &&
+!error &&
+contacts.length===0 &&
+
+<div className="empty-state">
+
+
+<h3>
+
+{search
+?
+"No Contacts Found"
+:
+"No Contacts Yet"}
+
+</h3>
+
+
+
+<p>
+
+{
+search
+?
+"No matching contacts found."
+:
+"Start building your contact list."
+}
+
+</p>
+
+
+
+{
+!search &&
+
+<button
+onClick={()=>navigate("/contacts/new")}
+>
+
+Add Your First Contact
+
+</button>
+
 }
 
 
-};
+</div>
 
-const handleSearch = (e) => {
-setSearch(e.target.value);
-setPage(0);
-};
-
-const handleLogout = () => {
-clearSession();
-navigate("/login");
-};
-
-return ( <div className="dashboard">
+}
 
 
-  {/* =========================
-      DASHBOARD HEADER
-  ========================= */}
 
-  <header className="dashboard-header">
 
-    <div>
-      <h1>Contact Management</h1>
 
-      <p>
-        Welcome, {user?.firstName || "User"}!
-      </p>
-    </div>
 
-    <div className="dashboard-actions">
+{
+!loading &&
+!error &&
+contacts.length>0 &&
 
-      {/* Profile Button */}
-      <button
-        className="profile-button"
-        onClick={() => navigate("/profile")}
-      >
-        My Profile
-      </button>
 
-      {/* Logout Button */}
-      <button
-        onClick={handleLogout}
-        className="logout-button"
-      >
-        Logout
-      </button>
+<div className="contacts-grid">
 
-    </div>
 
-  </header>
+{
 
-  {/* =========================
-      MAIN CONTENT
-  ========================= */}
+contacts.map(contact=>(
 
-  <main className="dashboard-content">
 
-    {/* Contacts Header */}
+<div
+className="contact-card"
+key={contact.id}
+>
 
-    <div className="contacts-header">
 
-      <div>
-        <h2>My Contacts</h2>
+<h3>
 
-        <p>
-          Manage your personal and professional contacts
-        </p>
-      </div>
+{contact.firstName} {contact.lastName}
 
-      {/* Add Contact */}
+</h3>
 
-      <button
-        className="add-contact-button"
-        onClick={() => navigate("/contacts/new")}
-      >
-        + Add Contact
-      </button>
 
-    </div>
 
-    {/* =========================
-        SEARCH & CONTACT COUNT
-    ========================= */}
+<p>
 
-    <div className="contacts-toolbar">
+{contact.title || "No title"}
 
-      <input
-        type="text"
-        className="search-input"
-        placeholder="Search by first name or last name..."
-        value={search}
-        onChange={handleSearch}
-      />
+</p>
 
-      <span className="contact-count">
-        {totalElements} Contact
-        {totalElements !== 1 ? "s" : ""}
-      </span>
 
-    </div>
 
-    {/* =========================
-        LOADING
-    ========================= */}
+<p>
 
-    {loading && (
-      <div className="loading-state">
-        <p>Loading contacts...</p>
-      </div>
-    )}
+📧 {contact.workEmail || "N/A"}
 
-    {/* =========================
-        ERROR
-    ========================= */}
+</p>
 
-    {error && (
-      <div className="error-message">
-        {error}
-      </div>
-    )}
 
-    {/* =========================
-        EMPTY STATE
-    ========================= */}
 
-    {!loading &&
-      !error &&
-      contacts.length === 0 && (
+<p>
 
-        <div className="empty-state">
+📞 {contact.workPhone || "N/A"}
 
-          <h3>
-            {search
-              ? "No Contacts Found"
-              : "No Contacts Yet"}
-          </h3>
+</p>
 
-          <p>
-            {search
-              ? "No contacts match your search."
-              : "You haven't added any contacts yet."}
-          </p>
 
-          {!search && (
-            <button
-              onClick={() =>
-                navigate("/contacts/new")
-              }
-            >
-              Add Your First Contact
-            </button>
-          )}
 
-        </div>
-      )}
+<button
 
-    {/* =========================
-        CONTACT CARDS
-    ========================= */}
+onClick={()=>
+navigate(`/contacts/${contact.id}`)
+}
 
-    {!loading &&
-      !error &&
-      contacts.length > 0 && (
+>
 
-        <>
+View Details
 
-          <div className="contacts-grid">
+</button>
 
-            {contacts.map((contact) => (
 
-              <div
-                className="contact-card"
-                key={contact.id}
-              >
 
-                <h3>
-                  {contact.firstName}{" "}
-                  {contact.lastName}
-                </h3>
+</div>
 
-                <p>
-                  {contact.title || "No title"}
-                </p>
 
-                <p>
-                  <strong>Work Email:</strong>{" "}
-                  {contact.workEmail || "N/A"}
-                </p>
+))
 
-                <p>
-                  <strong>Work Phone:</strong>{" "}
-                  {contact.workPhone || "N/A"}
-                </p>
+}
 
-                <button
-                  onClick={() =>
-                    navigate(
-                      `/contacts/${contact.id}`
-                    )
-                  }
-                >
-                  View Details
-                </button>
 
-              </div>
 
-            ))}
+</div>
 
-          </div>
 
-          {/* =========================
-              PAGINATION
-          ========================= */}
+}
 
-          {totalPages > 1 && (
 
-            <div className="pagination">
 
-              <button
-                disabled={page === 0}
-                onClick={() =>
-                  setPage(page - 1)
-                }
-              >
-                Previous
-              </button>
 
-              <span>
-                Page {page + 1} of {totalPages}
-              </span>
 
-              <button
-                disabled={
-                  page >= totalPages - 1
-                }
-                onClick={() =>
-                  setPage(page + 1)
-                }
-              >
-                Next
-              </button>
+{
+totalPages>1 &&
 
-            </div>
 
-          )}
+<div className="pagination">
 
-        </>
 
-      )}
+<button
 
-  </main>
+disabled={page===0}
+
+onClick={()=>setPage(page-1)}
+
+>
+Previous
+</button>
+
+
+
+<span>
+
+Page {page+1} of {totalPages}
+
+</span>
+
+
+
+<button
+
+disabled={page>=totalPages-1}
+
+onClick={()=>setPage(page+1)}
+
+>
+
+Next
+
+</button>
+
+
+
+</div>
+
+
+}
+
+
+
+
+</main>
+
 
 </div>
 
 
 );
+
 }
+
 
 export default Dashboard;
