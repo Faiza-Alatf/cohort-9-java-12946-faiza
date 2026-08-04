@@ -124,11 +124,14 @@ public class SecurityConfig {
                                 )
                                 .permitAll()
 
+                                // Only registration and login are public
                                 .requestMatchers(
-                                        "/api/auth/**"
+                                        "/api/auth/register",
+                                        "/api/auth/login"
                                 )
                                 .permitAll()
 
+                                // All other endpoints require authentication
                                 .anyRequest()
                                 .authenticated()
                 )
