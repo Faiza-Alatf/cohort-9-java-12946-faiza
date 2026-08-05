@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
@@ -38,18 +38,21 @@ const IconCheck = () => (
 
 function Profile() {
   const navigate = useNavigate();
+const [user, setUser] = useState(null);
 
-  let user = null;
+useEffect(() => {
   try {
     const storedUser = localStorage.getItem("user");
+
     if (storedUser) {
-      user = JSON.parse(storedUser);
+      setUser(JSON.parse(storedUser));
     }
   } catch (error) {
     console.error("Failed to parse user data:", error);
     localStorage.removeItem("user");
     navigate("/login", { replace: true });
   }
+}, [navigate]);
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -680,10 +683,14 @@ function Profile() {
                 <h3>🔒 Change Password</h3>
                 <form onSubmit={handleChangePassword}>
                   <div className="form-group">
-                    <label>Current Password</label>
-                    <input
-                      type="password"
-                      name="currentPassword"
+                    <label htmlFor="currentPassword">
+  Current Password
+</label>
+
+<input
+  id="currentPassword"
+  type="password"
+  name="currentPassword"
                       value={formData.currentPassword}
                       onChange={handleChange}
                       placeholder="Enter current password"
@@ -692,10 +699,14 @@ function Profile() {
                   </div>
 
                   <div className="form-group">
-                    <label>New Password</label>
-                    <input
-                      type="password"
-                      name="newPassword"
+                    <label htmlFor="newPassword">
+  New Password
+</label>
+
+<input
+  id="newPassword"
+  type="password"
+  name="newPassword"
                       value={formData.newPassword}
                       onChange={handleChange}
                       placeholder="Enter new password"
@@ -704,10 +715,14 @@ function Profile() {
                   </div>
 
                   <div className="form-group">
-                    <label>Confirm Password</label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
+                    <label htmlFor="confirmPassword">
+  Confirm Password
+</label>
+
+<input
+  id="confirmPassword"
+  type="password"
+  name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="Confirm new password"
