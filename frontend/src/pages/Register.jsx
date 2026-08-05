@@ -599,95 +599,100 @@ navigate("/dashboard");
 )}
 
             <form onSubmit={handleSubmit}>
-             <div className="form-group floating">
-  <input
-    id="firstName"
-    type="text"
-    name="firstName"
-    value={formData.firstName}
-    onChange={handleChange}
-    placeholder=" "
-    autoComplete="given-name"
-    required
-  />
-  <label htmlFor="firstName">First Name</label>
-  <span className="input-icon"><IconUser /></span>
-</div>
-               <div className="form-group floating">
-  <input
-    id="lastName"
-    type="text"
-    name="lastName"
-    value={formData.lastName}
-    onChange={handleChange}
-    placeholder=" "
-    autoComplete="family-name"
-    required
-  />
-  <label htmlFor="lastName">Last Name</label>
-  <span className="input-icon"><IconUser /></span>
-</div>
+  <div className="form-row">
+    <div className="form-group floating">
+      <input
+        id="firstName"
+        type="text"
+        name="firstName"
+        value={formData.firstName}
+        onChange={handleChange}
+        placeholder=" "
+        autoComplete="given-name"
+        required
+      />
+      <label htmlFor="firstName">First Name</label>
+      <span className="input-icon"><IconUser /></span>
+    </div>
 
-              <div className="form-group floating">
-  <input
-    id="email"
-    type="email"
-    name="email"
-    value={formData.email}
-    onChange={handleChange}
-    placeholder=" "
-    autoComplete="email"
-    required
-  />
-  <label htmlFor="email">Email</label>
-  <span className="input-icon"><IconMail /></span>
-</div>
-             <div className="form-group floating">
-  <input
-    id="phone"
-    type="tel"
-    name="phone"
-    value={formData.phone}
-    onChange={handleChange}
-    placeholder=" "
-    autoComplete="tel"
-  />
-  <label htmlFor="phone">Phone Number</label>
-  <span className="input-icon"><IconPhone /></span>
-</div>
-              <div className="form-group floating">
-  <input
-    id="password"
-    type="password"
-    name="password"
-    value={formData.password}
-    onChange={handleChange}
-    placeholder=" "
-    autoComplete="new-password"
-    required
-  />
-  <label htmlFor="password">Password</label>
-  <span className="input-icon"><IconLock /></span>
-</div>
+    <div className="form-group floating">
+      <input
+        id="lastName"
+        type="text"
+        name="lastName"
+        value={formData.lastName}
+        onChange={handleChange}
+        placeholder=" "
+        autoComplete="family-name"
+        required
+      />
+      <label htmlFor="lastName">Last Name</label>
+      <span className="input-icon"><IconUser /></span>
+    </div>
+  </div>
 
-              <button
-                type="submit"
-                className="auth-button"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <span className="spinner"></span>
-                    Creating Account...
-                  </>
-                ) : (
-                  <>
-                    Register
-                    <IconArrowRight />
-                  </>
-                )}
-              </button>
-            </form>
+  <div className="form-group floating">
+    <input
+      id="email"
+      type="email"
+      name="email"
+      value={formData.email}
+      onChange={handleChange}
+      placeholder=" "
+      autoComplete="email"
+      required
+    />
+    <label htmlFor="email">Email</label>
+    <span className="input-icon"><IconMail /></span>
+  </div>
+
+  <div className="form-group floating">
+    <input
+      id="phone"
+      type="tel"
+      name="phone"
+      value={formData.phone}
+      onChange={handleChange}
+      placeholder=" "
+      autoComplete="tel"
+    />
+    <label htmlFor="phone">Phone Number</label>
+    <span className="input-icon"><IconPhone /></span>
+  </div>
+
+  <div className="form-group floating">
+    <input
+      id="password"
+      type="password"
+      name="password"
+      value={formData.password}
+      onChange={handleChange}
+      placeholder=" "
+      autoComplete="new-password"
+      required
+    />
+    <label htmlFor="password">Password</label>
+    <span className="input-icon"><IconLock /></span>
+  </div>
+
+  <button
+    type="submit"
+    className="auth-button"
+    disabled={loading}
+  >
+    {loading ? (
+      <>
+        <span className="spinner"></span>
+        Creating Account...
+      </>
+    ) : (
+      <>
+        Register
+        <IconArrowRight />
+      </>
+    )}
+  </button>
+</form>
 
             <p className="auth-footer">
               Already have an account?{" "}
