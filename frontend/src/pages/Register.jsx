@@ -591,12 +591,8 @@ navigate("/dashboard");
               <h1>Create Account</h1>
               <p>Join Contact Management System</p>
             </div>
-
-            {error && (
-  <div
-    className="error-message"
-    role="alert"
-  >
+{error && (
+  <div className="error-message" role="alert">
     <IconAlertCircle />
     {error}
   </div>
