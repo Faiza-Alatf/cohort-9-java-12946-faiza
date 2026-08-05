@@ -24,7 +24,6 @@ button {
   transition: all 0.2s var(--ease);
   cursor: pointer;
   border: none;
-  outline: none;
 }
 
 input, textarea, select {
@@ -1696,4 +1695,16 @@ input, textarea, select {
     height: 60px;
     font-size: 22px;
   }
+}
+button:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
 }
