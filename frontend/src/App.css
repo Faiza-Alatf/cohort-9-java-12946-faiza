@@ -385,14 +385,13 @@ input, textarea, select {
 .form-group.floating input:focus + label,
 .form-group.floating input:not(:placeholder-shown) + label,
 .form-group.floating select:focus + label,
-.form-group.floating select:not(:placeholder-shown) + label {
-  top: 8px;
-  transform: scale(0.78);
-  color: var(--primary);
-  font-weight: 600;
-  background: var(--surface);
+.form-group.floating select.has-value + label {
+    top: 8px;
+    transform: scale(0.78);
+    color: var(--primary);
+    font-weight: 600;
+    background: var(--surface);
 }
-
 /* =========================================
    BUTTONS - ENHANCED
 ========================================= */
