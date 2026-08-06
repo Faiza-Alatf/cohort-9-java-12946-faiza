@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/contacts")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -99,6 +101,26 @@ public class ContactController {
                 );
 
         log.info("Get contacts API completed successfully");
+
+        return ResponseEntity.ok(contacts);
+    }
+
+    // Export all contacts
+    @GetMapping("/export")
+    public ResponseEntity<List<ContactResponse>> exportContacts(
+            Authentication authentication) {
+
+        log.info("Export contacts API request received");
+
+        String userEmail = authentication.getName();
+
+        List<ContactResponse> contacts =
+                contactService.exportContacts(userEmail);
+
+        log.info(
+                "Export contacts API completed successfully. Total contacts: {}",
+                contacts.size()
+        );
 
         return ResponseEntity.ok(contacts);
     }

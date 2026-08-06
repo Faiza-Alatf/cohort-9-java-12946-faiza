@@ -126,6 +126,31 @@ function Dashboard() {
     navigate("/login");
   };
 
+  const handleExport = async () => {
+  try {
+    const response = await api.get("/contacts/export", {
+      responseType: "blob",
+    });
+
+    const url = window.URL.createObjectURL(
+      new Blob([response.data], { type: "text/csv" })
+    );
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "contacts.csv");
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert("Failed to export contacts.");
+    console.error(err);
+  }
+};
+
   const getInitials = (contact) => {
     const first = contact.firstName?.[0] || "";
     const last = contact.lastName?.[0] || "";
@@ -862,6 +887,12 @@ function Dashboard() {
               <IconUser />
               My Profile
             </button>
+            <button
+  className="sidebar-link"
+  onClick={handleExport}
+>
+  📥 Export Contacts
+</button>
           </nav>
 
           <div className="sidebar-divider"></div>
@@ -888,6 +919,12 @@ function Dashboard() {
               <button className="profile-button" onClick={() => navigate("/profile")}>
                 My Profile
               </button>
+              <button
+  className="profile-button"
+  onClick={handleExport}
+>
+  Export CSV
+</button>
               <button className="logout-button" onClick={handleLogout}>
                 Logout
               </button>
