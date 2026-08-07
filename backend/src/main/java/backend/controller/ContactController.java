@@ -16,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/contacts")
@@ -106,25 +108,46 @@ public class ContactController {
     }
 
     // Export all contacts
-    @GetMapping("/export")
-    public ResponseEntity<List<ContactResponse>> exportContacts(
-            Authentication authentication) {
+   @GetMapping(value = "/export", produces = "text/csv")
+public ResponseEntity<String> exportContacts(
+        Authentication authentication) {
 
-        log.info("Export contacts API request received");
+    log.info("Export contacts API request received");
 
-        String userEmail = authentication.getName();
+    String userEmail = authentication.getName();
 
-        List<ContactResponse> contacts =
-                contactService.exportContacts(userEmail);
+    List<ContactResponse> contacts =
+            contactService.exportContacts(userEmail);
 
-        log.info(
-                "Export contacts API completed successfully. Total contacts: {}",
-                contacts.size()
-        );
+    StringBuilder csv = new StringBuilder();
 
-        return ResponseEntity.ok(contacts);
+    csv.append("First Name,Last Name,Title,Work Email,Personal Email,Work Phone,Home Phone,Personal Phone\n");
+
+    for (ContactResponse contact : contacts) {
+        csv.append(contact.getFirstName()).append(",")
+                .append(contact.getLastName()).append(",")
+                .append(contact.getTitle()).append(",")
+                .append(contact.getWorkEmail()).append(",")
+                .append(contact.getPersonalEmail()).append(",")
+                .append(contact.getWorkPhone()).append(",")
+                .append(contact.getHomePhone()).append(",")
+                .append(contact.getPersonalPhone())
+                .append("\n");
     }
 
+    log.info(
+            "Export contacts API completed successfully. Total contacts: {}",
+            contacts.size()
+    );
+
+    return ResponseEntity.ok()
+            .header(
+                    HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=contacts.csv"
+            )
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .body(csv.toString());
+}
     // Get contact by ID
     @GetMapping("/{id}")
     public ResponseEntity<ContactResponse> getContactById(
