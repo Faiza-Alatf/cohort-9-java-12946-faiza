@@ -72,21 +72,21 @@ function Dashboard() {
     localStorage.removeItem("user");
   };
 
-  const getUserFromStorage = () => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      return storedUser ? JSON.parse(storedUser) : null;
-   } catch (err) {
-  if (err.response?.status === 401) {
-    clearSession();
-    navigate("/login");
-    return;
-  }
+ const getUserFromStorage = () => {
+  try {
+    const storedUser = localStorage.getItem("user");
 
-  alert("Failed to export contacts.");
-  console.error(err);
-}
-  };
+    if (!storedUser) {
+      return null;
+    }
+
+    return JSON.parse(storedUser);
+  } catch (err) {
+    localStorage.removeItem("user");
+    console.error("Failed to read stored user.", err);
+    return null;
+  }
+};
 
   const user = getUserFromStorage();
 
