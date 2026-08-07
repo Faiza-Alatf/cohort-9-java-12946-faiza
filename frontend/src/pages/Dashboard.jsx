@@ -76,10 +76,16 @@ function Dashboard() {
     try {
       const storedUser = localStorage.getItem("user");
       return storedUser ? JSON.parse(storedUser) : null;
-    } catch (error) {
-      clearSession();
-      return null;
-    }
+   } catch (err) {
+  if (err.response?.status === 401) {
+    clearSession();
+    navigate("/login");
+    return;
+  }
+
+  alert("Failed to export contacts.");
+  console.error(err);
+}
   };
 
   const user = getUserFromStorage();
