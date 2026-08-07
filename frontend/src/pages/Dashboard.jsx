@@ -152,10 +152,16 @@ function Dashboard() {
 
     window.URL.revokeObjectURL(url);
     await fetchContacts();
-  } catch (err) {
-    alert("Failed to export contacts.");
-    console.error(err);
+} catch (err) {
+  if (err.response?.status === 401) {
+    clearSession();
+    navigate("/login");
+    return;
   }
+
+  alert("Failed to export contacts.");
+  console.error(err);
+}
 };
 
   const getInitials = (contact) => {
