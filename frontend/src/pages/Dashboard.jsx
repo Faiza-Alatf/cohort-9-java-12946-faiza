@@ -151,6 +151,7 @@ function Dashboard() {
     link.remove();
 
     window.URL.revokeObjectURL(url);
+    await fetchContacts();
   } catch (err) {
     alert("Failed to export contacts.");
     console.error(err);
