@@ -67,11 +67,19 @@ function Dashboard() {
 
   const pageSize = 6;
 
-  const clearSession = () => {
+ const clearSession = () => {
+  try {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
-  };
+  } catch (err) {
+    console.error("Failed to clear stored token.", err);
+  }
 
+  try {
+    localStorage.removeItem("user");
+  } catch (err) {
+    console.error("Failed to clear stored user.", err);
+  }
+};
  const getUserFromStorage = () => {
   try {
     const storedUser = localStorage.getItem("user");
@@ -82,7 +90,12 @@ function Dashboard() {
 
     return JSON.parse(storedUser);
   } catch (err) {
-    localStorage.removeItem("user");
+    try {
+      localStorage.removeItem("user");
+    } catch (storageErr) {
+      console.error("Failed to remove invalid stored user.", storageErr);
+    }
+
     console.error("Failed to read stored user.", err);
     return null;
   }
