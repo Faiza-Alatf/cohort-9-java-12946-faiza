@@ -288,11 +288,9 @@ function Dashboard() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await api.post(
-        "/contacts/import",
-        formData
-      );
-
+      const response = await api.post("/contacts/import", formData, {
+    timeout: 60000,
+});
       const importedCount =
         response.data?.importedCount || 0;
 
