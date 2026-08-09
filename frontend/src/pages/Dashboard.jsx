@@ -313,8 +313,11 @@ function Dashboard() {
           }`
         );
 
-        setPage(0);
-        await fetchContacts();
+        if (page === 0) {
+    await fetchContacts();
+} else {
+    setPage(0);
+}
       } else if (skippedCount > 0) {
         setImportError(
           `No contacts were imported. ${skippedCount} row${
