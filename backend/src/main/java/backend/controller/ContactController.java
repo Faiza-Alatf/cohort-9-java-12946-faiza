@@ -16,8 +16,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/contacts")
@@ -127,14 +129,38 @@ public class ContactController {
         );
 
         for (ContactResponse contact : contacts) {
-            csv.append(escapeCsvCell(contact.getFirstName())).append(",")
-                    .append(escapeCsvCell(contact.getLastName())).append(",")
-                    .append(escapeCsvCell(contact.getTitle())).append(",")
-                    .append(escapeCsvCell(contact.getWorkEmail())).append(",")
-                    .append(escapeCsvCell(contact.getPersonalEmail())).append(",")
-                    .append(escapeCsvCell(contact.getWorkPhone())).append(",")
-                    .append(escapeCsvCell(contact.getHomePhone())).append(",")
-                    .append(escapeCsvCell(contact.getPersonalPhone()))
+
+            csv.append(
+                            escapeCsvCell(contact.getFirstName())
+                    )
+                    .append(",")
+                    .append(
+                            escapeCsvCell(contact.getLastName())
+                    )
+                    .append(",")
+                    .append(
+                            escapeCsvCell(contact.getTitle())
+                    )
+                    .append(",")
+                    .append(
+                            escapeCsvCell(contact.getWorkEmail())
+                    )
+                    .append(",")
+                    .append(
+                            escapeCsvCell(contact.getPersonalEmail())
+                    )
+                    .append(",")
+                    .append(
+                            escapeCsvCell(contact.getWorkPhone())
+                    )
+                    .append(",")
+                    .append(
+                            escapeCsvCell(contact.getHomePhone())
+                    )
+                    .append(",")
+                    .append(
+                            escapeCsvCell(contact.getPersonalPhone())
+                    )
                     .append("\n");
         }
 
@@ -150,6 +176,34 @@ public class ContactController {
                 )
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csv.toString());
+    }
+
+    // Import contacts from CSV
+    @PostMapping(
+            value = "/import",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, Object>> importContacts(
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+
+        log.info("Import contacts API request received");
+
+        String userEmail = authentication.getName();
+
+        Map<String, Object> result =
+                contactService.importContacts(
+                        file,
+                        userEmail
+                );
+
+        log.info(
+                "Import contacts API completed successfully. User: {}",
+                userEmail
+        );
+
+        return ResponseEntity.ok(result);
     }
 
     // Escape CSV values and prevent spreadsheet formula injection

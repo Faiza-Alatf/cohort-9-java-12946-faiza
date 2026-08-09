@@ -14,7 +14,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +33,8 @@ public class ContactService {
 
     private static final Logger log =
             LoggerFactory.getLogger(ContactService.class);
+
+    private static final int MAX_IMPORT_ROWS = 1000;
 
     private final ContactRepository contactRepository;
     private final UserRepository userRepository;
@@ -33,24 +46,24 @@ public class ContactService {
         this.contactRepository = contactRepository;
         this.userRepository = userRepository;
     }
-    
+
     @Transactional(readOnly = true)
-public List<ContactResponse> exportContacts(String userEmail) {
+    public List<ContactResponse> exportContacts(String userEmail) {
 
-    User user = getUserByEmail(userEmail);
+        User user = getUserByEmail(userEmail);
 
-    List<Contact> contacts = contactRepository.findByUser(user);
+        List<Contact> contacts = contactRepository.findByUser(user);
 
-    log.info(
-            "Exporting {} contacts for user: {}",
-            contacts.size(),
-            userEmail
-    );
+        log.info(
+                "Exporting {} contacts for user: {}",
+                contacts.size(),
+                userEmail
+        );
 
-    return contacts.stream()
-            .map(this::mapToResponse)
-            .collect(Collectors.toList());
-}
+        return contacts.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
 
     @Transactional
     public ContactResponse createContact(
@@ -255,6 +268,325 @@ public List<ContactResponse> exportContacts(String userEmail) {
                 contactId,
                 userEmail
         );
+    }
+
+    /**
+     * Import contacts from CSV for the currently authenticated user.
+     *
+     * First Name and Last Name are required.
+     * All other fields are optional.
+     */
+    @Transactional
+    public Map<String, Object> importContacts(
+            MultipartFile file,
+            String userEmail) {
+
+        User user = getUserByEmail(userEmail);
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Please select a CSV file to import."
+            );
+        }
+
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException(
+                    "CSV file size must not exceed 5 MB."
+            );
+        }
+
+        String originalFilename = file.getOriginalFilename();
+
+        if (originalFilename == null
+                || !originalFilename.toLowerCase().endsWith(".csv")) {
+
+            throw new IllegalArgumentException(
+                    "Only CSV files are supported."
+            );
+        }
+
+        int importedCount = 0;
+        int skippedCount = 0;
+
+        List<String> errors = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(
+                        file.getInputStream(),
+                        StandardCharsets.UTF_8))) {
+
+            String headerLine = reader.readLine();
+
+            if (headerLine == null || headerLine.trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "CSV file is empty."
+                );
+            }
+
+            List<String> headers = parseCsvLine(headerLine);
+
+            Map<String, Integer> columnIndexes =
+                    buildColumnIndexes(headers);
+
+            validateRequiredHeaders(columnIndexes);
+
+            String line;
+            int lineNumber = 1;
+
+            while ((line = reader.readLine()) != null) {
+
+                lineNumber++;
+
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                if (importedCount + skippedCount >= MAX_IMPORT_ROWS) {
+                    errors.add(
+                            "Maximum of "
+                                    + MAX_IMPORT_ROWS
+                                    + " data rows can be imported."
+                    );
+                    break;
+                }
+
+                try {
+                    List<String> values = parseCsvLine(line);
+
+                    String firstName = getCsvValue(
+                            values,
+                            columnIndexes.get("first name")
+                    );
+
+                    String lastName = getCsvValue(
+                            values,
+                            columnIndexes.get("last name")
+                    );
+
+                    if (firstName.isBlank()) {
+                        throw new IllegalArgumentException(
+                                "First Name is required."
+                        );
+                    }
+
+                    if (lastName.isBlank()) {
+                        throw new IllegalArgumentException(
+                                "Last Name is required."
+                        );
+                    }
+
+                    Contact contact = new Contact();
+
+                    contact.setFirstName(firstName);
+                    contact.setLastName(lastName);
+                    contact.setTitle(
+                            getCsvValue(
+                                    values,
+                                    columnIndexes.get("title")
+                            )
+                    );
+                    contact.setWorkEmail(
+                            getCsvValue(
+                                    values,
+                                    columnIndexes.get("work email")
+                            )
+                    );
+                    contact.setPersonalEmail(
+                            getCsvValue(
+                                    values,
+                                    columnIndexes.get("personal email")
+                            )
+                    );
+                    contact.setWorkPhone(
+                            getCsvValue(
+                                    values,
+                                    columnIndexes.get("work phone")
+                            )
+                    );
+                    contact.setHomePhone(
+                            getCsvValue(
+                                    values,
+                                    columnIndexes.get("home phone")
+                            )
+                    );
+                    contact.setPersonalPhone(
+                            getCsvValue(
+                                    values,
+                                    columnIndexes.get("personal phone")
+                            )
+                    );
+
+                    /*
+                     * IMPORTANT:
+                     * The authenticated user is explicitly assigned here.
+                     * Therefore imported contacts belong only to this user.
+                     */
+                    contact.setUser(user);
+
+                    contactRepository.save(contact);
+
+                    importedCount++;
+
+                } catch (IllegalArgumentException ex) {
+
+                    skippedCount++;
+
+                    errors.add(
+                            "Row "
+                                    + lineNumber
+                                    + ": "
+                                    + ex.getMessage()
+                    );
+
+                } catch (Exception ex) {
+
+                    skippedCount++;
+
+                    log.error(
+                            "Unexpected error while importing row {} for user {}",
+                            lineNumber,
+                            userEmail,
+                            ex
+                    );
+
+                    errors.add(
+                            "Row "
+                                    + lineNumber
+                                    + ": Unable to import this row."
+                    );
+                }
+            }
+
+        } catch (IOException ex) {
+
+            log.error(
+                    "Failed to read CSV file for user: {}",
+                    userEmail,
+                    ex
+            );
+
+            throw new IllegalArgumentException(
+                    "Unable to read the CSV file."
+            );
+        }
+
+        log.info(
+                "CSV import completed. User: {}, Imported: {}, Skipped: {}",
+                userEmail,
+                importedCount,
+                skippedCount
+        );
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("message", "CSV import completed.");
+        result.put("importedCount", importedCount);
+        result.put("skippedCount", skippedCount);
+        result.put(
+                "errors",
+                errors.isEmpty()
+                        ? Collections.emptyList()
+                        : errors
+        );
+
+        return result;
+    }
+
+    private Map<String, Integer> buildColumnIndexes(
+            List<String> headers) {
+
+        Map<String, Integer> indexes = new HashMap<>();
+
+        for (int i = 0; i < headers.size(); i++) {
+
+            String header = headers.get(i)
+                    .trim()
+                    .toLowerCase();
+
+            indexes.put(header, i);
+        }
+
+        return indexes;
+    }
+
+    private void validateRequiredHeaders(
+            Map<String, Integer> columnIndexes) {
+
+        if (!columnIndexes.containsKey("first name")) {
+            throw new IllegalArgumentException(
+                    "CSV must contain a 'First Name' column."
+            );
+        }
+
+        if (!columnIndexes.containsKey("last name")) {
+            throw new IllegalArgumentException(
+                    "CSV must contain a 'Last Name' column."
+            );
+        }
+    }
+
+    private String getCsvValue(
+            List<String> values,
+            Integer index) {
+
+        if (index == null || index >= values.size()) {
+            return "";
+        }
+
+        return values.get(index).trim();
+    }
+
+    /**
+     * Parses a CSV row while supporting:
+     * - commas inside quoted values
+     * - escaped double quotes
+     * - normal unquoted values
+     */
+    private List<String> parseCsvLine(String line) {
+
+        List<String> values = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+
+        boolean insideQuotes = false;
+
+        for (int i = 0; i < line.length(); i++) {
+
+            char character = line.charAt(i);
+
+            if (character == '"') {
+
+                if (insideQuotes
+                        && i + 1 < line.length()
+                        && line.charAt(i + 1) == '"') {
+
+                    current.append('"');
+                    i++;
+
+                } else {
+
+                    insideQuotes = !insideQuotes;
+                }
+
+            } else if (character == ',' && !insideQuotes) {
+
+                values.add(current.toString());
+                current.setLength(0);
+
+            } else {
+
+                current.append(character);
+            }
+        }
+
+        if (insideQuotes) {
+            throw new IllegalArgumentException(
+                    "Invalid CSV format: unclosed quotation mark."
+            );
+        }
+
+        values.add(current.toString());
+
+        return values;
     }
 
     private User getUserByEmail(String email) {
