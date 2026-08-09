@@ -110,74 +110,79 @@ public class ContactController {
     }
 
     // Export all contacts as CSV
-    @GetMapping(value = "/export", produces = "text/csv")
-    public ResponseEntity<String> exportContacts(
-            Authentication authentication) {
+   // Export all contacts as CSV
+@GetMapping(
+        value = "/export",
+        produces = "text/csv;charset=UTF-8"
+)
+public ResponseEntity<String> exportContacts(
+        Authentication authentication) {
 
-        log.info("Export contacts API request received");
+    log.info("Export contacts API request received");
 
-        String userEmail = authentication.getName();
+    String userEmail = authentication.getName();
 
-        List<ContactResponse> contacts =
-                contactService.exportContacts(userEmail);
+    List<ContactResponse> contacts =
+            contactService.exportContacts(userEmail);
 
-        StringBuilder csv = new StringBuilder();
+    StringBuilder csv = new StringBuilder();
+
+    csv.append(
+            "First Name,Last Name,Title,Work Email,Personal Email,"
+                    + "Work Phone,Home Phone,Personal Phone\n"
+    );
+
+    for (ContactResponse contact : contacts) {
 
         csv.append(
-                "First Name,Last Name,Title,Work Email,Personal Email,"
-                        + "Work Phone,Home Phone,Personal Phone\n"
-        );
-
-        for (ContactResponse contact : contacts) {
-
-            csv.append(
-                            escapeCsvCell(contact.getFirstName())
-                    )
-                    .append(",")
-                    .append(
-                            escapeCsvCell(contact.getLastName())
-                    )
-                    .append(",")
-                    .append(
-                            escapeCsvCell(contact.getTitle())
-                    )
-                    .append(",")
-                    .append(
-                            escapeCsvCell(contact.getWorkEmail())
-                    )
-                    .append(",")
-                    .append(
-                            escapeCsvCell(contact.getPersonalEmail())
-                    )
-                    .append(",")
-                    .append(
-                            escapeCsvCell(contact.getWorkPhone())
-                    )
-                    .append(",")
-                    .append(
-                            escapeCsvCell(contact.getHomePhone())
-                    )
-                    .append(",")
-                    .append(
-                            escapeCsvCell(contact.getPersonalPhone())
-                    )
-                    .append("\n");
-        }
-
-        log.info(
-                "Export contacts API completed successfully. Total contacts: {}",
-                contacts.size()
-        );
-
-        return ResponseEntity.ok()
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=contacts.csv"
+                        escapeCsvCell(contact.getFirstName())
                 )
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(csv.toString());
+                .append(",")
+                .append(
+                        escapeCsvCell(contact.getLastName())
+                )
+                .append(",")
+                .append(
+                        escapeCsvCell(contact.getTitle())
+                )
+                .append(",")
+                .append(
+                        escapeCsvCell(contact.getWorkEmail())
+                )
+                .append(",")
+                .append(
+                        escapeCsvCell(contact.getPersonalEmail())
+                )
+                .append(",")
+                .append(
+                        escapeCsvCell(contact.getWorkPhone())
+                )
+                .append(",")
+                .append(
+                        escapeCsvCell(contact.getHomePhone())
+                )
+                .append(",")
+                .append(
+                        escapeCsvCell(contact.getPersonalPhone())
+                )
+                .append("\n");
     }
 
+    log.info(
+            "Export contacts API completed successfully. Total contacts: {}",
+            contacts.size()
+    );
+
+    return ResponseEntity.ok()
+            .header(
+                    HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=contacts.csv"
+            )
+            .contentType(
+                    MediaType.parseMediaType("text/csv;charset=UTF-8")
+            )
+            .body(csv.toString());
+}
     // Import contacts from CSV
     @PostMapping(
             value = "/import",
