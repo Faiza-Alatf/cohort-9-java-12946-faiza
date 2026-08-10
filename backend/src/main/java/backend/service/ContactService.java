@@ -320,11 +320,16 @@ public class ContactService {
 
         String headerLine = reader.readLine();
 
-        if (headerLine == null || headerLine.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "CSV file is empty."
-            );
-        }
+        if (headerLine != null && headerLine.startsWith("\uFEFF")) {
+    headerLine = headerLine.substring(1);
+}
+
+if (headerLine == null || headerLine.trim().isEmpty()) {
+    throw new IllegalArgumentException(
+            "CSV file is empty."
+    );
+}
+
 
         List<String> headers = parseCsvLine(headerLine);
 
