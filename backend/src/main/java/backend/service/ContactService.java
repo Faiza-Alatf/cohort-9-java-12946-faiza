@@ -318,9 +318,9 @@ public class ContactService {
                     file.getInputStream(),
                     StandardCharsets.UTF_8))) {
 
-        String headerLine = reader.readLine();
+       String headerLine = reader.readLine();
 
-        if (headerLine != null && headerLine.startsWith("\uFEFF")) {
+if (headerLine != null && headerLine.startsWith("\uFEFF")) {
     headerLine = headerLine.substring(1);
 }
 
@@ -329,8 +329,6 @@ if (headerLine == null || headerLine.trim().isEmpty()) {
             "CSV file is empty."
     );
 }
-
-
         List<String> headers = parseCsvLine(headerLine);
 
         Map<String, Integer> columnIndexes =
