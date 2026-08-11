@@ -74,7 +74,7 @@ navigate("/dashboard");
 
         body {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          background: #f6f5fb;
+                  background: #F7F9FB;
           overflow: hidden;
         }
 
@@ -126,7 +126,7 @@ navigate("/dashboard");
           display: grid;
           grid-template-columns: 1fr 1.05fr;
           min-height: 100vh;
-          background: #f6f5fb;
+          background: #F7F9FB;
           overflow: hidden;
         }
 
@@ -138,15 +138,15 @@ navigate("/dashboard");
           align-items: center;
           justify-content: center;
           padding: 60px 56px;
-          background: linear-gradient(155deg, #eae7ff 0%, #e3d9fb 45%, #f7e6f4 80%, #fdeaef 100%);
-          color: #241f4d;
+          background: linear-gradient(155deg, #1E3A5F 0%, #12323f 55%);
+          color: #fff;
         }
 
         .auth-brand .orb-1 {
           position: absolute;
           width: 560px;
           height: 560px;
-          background: radial-gradient(circle, rgba(147, 137, 246, 0.22) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(20,184,166,0.22) 0%, transparent 70%);
           top: -240px;
           right: -180px;
           animation: floatBlob 16s ease-in-out infinite;
@@ -156,7 +156,7 @@ navigate("/dashboard");
           position: absolute;
           width: 460px;
           height: 460px;
-          background: radial-gradient(circle, rgba(236, 178, 220, 0.18) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(30,58,95,0.16) 0%, transparent 70%);
           bottom: -180px;
           left: -140px;
           animation: floatBlob2 20s ease-in-out infinite;
@@ -166,8 +166,8 @@ navigate("/dashboard");
           position: absolute;
           inset: 0;
           background-image: 
-            linear-gradient(rgba(79, 70, 229, 0.035) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(79, 70, 229, 0.035) 1px, transparent 1px);
+            linear-gradient(rgba(20,184,166, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(20,184,166, 0.03) 1px, transparent 1px);
           background-size: 44px 44px;
         }
 
@@ -193,13 +193,13 @@ navigate("/dashboard");
           align-items: center;
           justify-content: center;
           border-radius: 15px;
-          background: rgba(79, 70, 229, 0.12);
-          border: 1px solid rgba(79, 70, 229, 0.16);
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.08);
           font-family: 'Fraunces', serif;
           font-weight: 600;
           font-size: 18px;
-          color: #4f46e5;
-          box-shadow: 0 8px 28px rgba(79, 70, 229, 0.08);
+          color: #ffffff;
+          box-shadow: 0 8px 28px rgba(18,40,48,0.08);
         }
 
         .brand-logo-wrapper span {
@@ -263,8 +263,8 @@ navigate("/dashboard");
           align-items: center;
           justify-content: center;
           border-radius: 50%;
-          background: rgba(79, 70, 229, 0.1);
-          color: #4f46e5;
+          background: rgba(20,184,166,0.10);
+          color: #1E3A5F;
         }
 
         /* ===== RIGHT PANEL ===== */
@@ -273,7 +273,7 @@ navigate("/dashboard");
           align-items: center;
           justify-content: center;
           padding: 40px 30px;
-          background: #f6f5fb;
+                  background: #F7F9FB;
         }
 
         .auth-card {
@@ -283,9 +283,9 @@ navigate("/dashboard");
           padding: 44px 40px 36px;
           border-radius: 20px;
           box-shadow: 
-            0 1px 3px rgba(30, 27, 75, 0.02),
-            0 4px 16px rgba(79, 70, 229, 0.05),
-            0 8px 44px rgba(79, 70, 229, 0.04);
+            0 1px 3px rgba(18, 40, 48, 0.02),
+            0 4px 16px rgba(18, 40, 48, 0.04),
+            0 8px 44px rgba(18, 40, 48, 0.04);
           border: 1px solid rgba(226,232,240, 0.6);
           animation: fadeInRight 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.08s backwards;
         }
@@ -302,8 +302,8 @@ navigate("/dashboard");
           gap: 8px;
           padding: 6px 16px;
           border-radius: 100px;
-          background: #eef2ff;
-          color: #4f46e5;
+                  background: rgba(20,184,166,0.12);
+                  color: #1E3A5F;
           font-size: 12px;
           font-weight: 600;
           letter-spacing: 0.01em;
@@ -315,7 +315,7 @@ navigate("/dashboard");
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #4f46e5;
+                  background: #14B8A6;
           animation: pulseDot 2s ease-in-out infinite;
         }
 
