@@ -266,7 +266,7 @@ function Login() {
 
         .brand-features li:hover {
           background: rgba(255, 255, 255, 0.85);
-          border-color: rgba(79, 70, 229, 0.18);
+          border-color: rgba(20,184,166,0.18);
         }
 
         .feature-icon {
@@ -453,29 +453,29 @@ function Login() {
         /* Submit Button */
         .auth-button {
           width: 100%;
-          padding: 16px 24px;
+                  padding: 14px 20px;
           margin-top: 8px;
           border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+                  background: var(--primary);
           color: #fff;
           font-size: 15px;
           font-weight: 600;
           letter-spacing: 0.01em;
-          box-shadow: 0 4px 16px rgba(129, 140, 248, 0.25);
+                  box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.18);
           height: 56px;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 10px;
-          transition: all 0.25s ease;
+                  transition: all 0.2s var(--ease);
           font-family: 'Inter', sans-serif;
           cursor: pointer;
         }
 
         .auth-button:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 0 8px 26px rgba(129, 140, 248, 0.32);
+                  box-shadow: 0 8px 26px rgba(var(--primary-rgb), 0.22);
         }
 
         .auth-button:active:not(:disabled) {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import Analytics from "./Analytics";
 
 // Professional Icons
 const IconGrid = () => (
@@ -133,6 +134,7 @@ function Dashboard() {
   const [importing, setImporting] = useState(false);
   const [importMessage, setImportMessage] = useState("");
   const [importError, setImportError] = useState("");
+  const [view, setView] = useState('contacts');
 
   const pageSize = 6;
 
@@ -381,7 +383,7 @@ function Dashboard() {
 
         body {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          background: #f5f3ff;
+          background: var(--background);
         }
 
         @keyframes fadeInUp {
@@ -413,28 +415,24 @@ function Dashboard() {
         }
 
         .app-shell {
-          display: flex;
-          min-height: 100vh;
-          background: #f5f3ff;
-        }
+                  display: flex;
+                  min-height: 100vh;
+                  background: var(--background);
+                }
 
-        .sidebar {
-          width: 260px;
-          flex-shrink: 0;
-          display: flex;
-          flex-direction: column;
-          background: linear-gradient(
-            180deg,
-            #faf5ff 0%,
-            #f3e8ff 100%
-          );
-          border-right: 1px solid #e9d5ff;
-          padding: 28px 18px;
-          position: sticky;
-          top: 0;
-          height: 100vh;
-          overflow-y: auto;
-        }
+                .sidebar {
+                  width: 260px;
+                  flex-shrink: 0;
+                  display: flex;
+                  flex-direction: column;
+                  background: var(--sidebar-bg);
+                  color: #ffffff;
+                  padding: 28px 18px;
+                  position: sticky;
+                  top: 0;
+                  height: 100vh;
+                  overflow-y: auto;
+                }
 
         .sidebar-logo {
           display: flex;
@@ -445,23 +443,19 @@ function Dashboard() {
         }
 
         .sidebar-logo-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: linear-gradient(
-            135deg,
-            #a78bfa 0%,
-            #8b5cf6 100%
-          );
-          color: #fff;
-          font-family: 'Fraunces', serif;
-          font-weight: 700;
-          font-size: 16px;
-          box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
-        }
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 14px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  background: linear-gradient(135deg, var(--primary), var(--sidebar-bg));
+                  color: #fff;
+                  font-family: 'Fraunces', serif;
+                  font-weight: 700;
+                  font-size: 16px;
+                  box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.15);
+                }
 
         .sidebar-logo-text {
           font-weight: 700;
@@ -489,7 +483,7 @@ function Dashboard() {
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          color: #a78bfa;
+                  color: rgba(255,255,255,0.85);
           padding: 0 12px 8px;
           margin-top: 4px;
         }
@@ -501,11 +495,11 @@ function Dashboard() {
           padding: 12px 16px;
           border-radius: 12px;
           background: transparent;
-          color: #6d5a8a;
+                  color: rgba(255,255,255,0.95);
           font-weight: 500;
           font-size: 14px;
           text-align: left;
-          transition: all 0.3s ease;
+                  transition: all 0.18s ease;
           text-decoration: none;
           width: 100%;
           cursor: pointer;
@@ -513,29 +507,22 @@ function Dashboard() {
         }
 
         .sidebar-link:hover {
-          background: rgba(139, 92, 246, 0.08);
-          color: #4c1d95;
+                  background: rgba(var(--primary-rgb), 0.06);
+                  color: #ffffff;
         }
 
         .sidebar-link.active {
-          background: linear-gradient(
-            135deg,
-            rgba(139, 92, 246, 0.12) 0%,
-            rgba(167, 139, 250, 0.08) 100%
-          );
-          color: #4c1d95;
-          font-weight: 600;
-        }
+                  background: var(--primary);
+                  color: #ffffff;
+                  font-weight: 600;
+                  box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.12);
+                }
 
         .sidebar-divider {
-          height: 1px;
-          background: linear-gradient(
-            90deg,
-            #e9d5ff,
-            transparent
-          );
-          margin: 12px 12px 16px;
-        }
+                  height: 1px;
+                  background: var(--border-strong);
+                  margin: 12px 12px 16px;
+                }
 
         .sidebar-logout {
           display: flex;
@@ -544,20 +531,20 @@ function Dashboard() {
           padding: 12px 16px;
           border-radius: 12px;
           background: transparent;
-          color: #f472b6;
+                  color: rgba(255,255,255,0.9);
           font-weight: 500;
           font-size: 14px;
           margin-top: auto;
-          transition: all 0.3s ease;
+                  transition: all 0.18s ease;
           cursor: pointer;
           width: 100%;
-          border: 1px solid rgba(244, 114, 182, 0.15);
+                  border: 1px solid rgba(255,255,255,0.06);
         }
 
         .sidebar-logout:hover {
-          background: rgba(244, 114, 182, 0.06);
-          border-color: rgba(244, 114, 182, 0.3);
-          color: #db2777;
+                  background: rgba(255,255,255,0.04);
+                  border-color: rgba(255,255,255,0.12);
+                  color: #fff;
         }
 
         .main-panel {
@@ -570,7 +557,7 @@ function Dashboard() {
           padding: 20px 5%;
           background: rgba(255, 255, 255, 0.7);
           backdrop-filter: blur(16px);
-          border-bottom: 1px solid rgba(233, 213, 255, 0.5);
+          border-bottom: 1px solid var(--border);
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -635,34 +622,34 @@ function Dashboard() {
         }
 
         .profile-button {
-          background: #f3e8ff;
-          border: 1.5px solid #d8b4fe;
-          color: #7c3aed;
+                  background: rgba(var(--primary-rgb), 0.06);
+                  border: 1.5px solid var(--border);
+                  color: var(--primary);
         }
 
         .import-button {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          background: #ecfdf5;
-          border: 1.5px solid #a7f3d0;
-          color: #047857;
+                  background: var(--success-light);
+                  border: 1.5px solid var(--success);
+                  color: var(--success);
         }
 
         .export-button {
-          background: #eff6ff;
-          border: 1.5px solid #bfdbfe;
-          color: #2563eb;
+                  background: var(--info-light);
+                  border: 1.5px solid var(--info);
+                  color: var(--info);
         }
 
         .logout-button {
-          background: #fef2f2;
-          border: 1.5px solid #fecaca;
-          color: #ef4444;
+                  background: var(--danger-light);
+                  border: 1.5px solid rgba(220,34,34,0.12);
+                  color: var(--danger);
         }
 
         .profile-button:hover {
-          background: #e9d5ff;
+                  background: rgba(var(--primary-rgb), 0.10);
         }
 
         .import-button:hover {
@@ -697,7 +684,7 @@ function Dashboard() {
         .stat-card {
           padding: 22px 24px;
           background: #ffffff;
-          border: 1px solid #e9d5ff;
+          border: 1px solid var(--border);
           border-radius: 16px;
         }
 
@@ -708,8 +695,8 @@ function Dashboard() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #f3e8ff;
-          color: #7c3aed;
+          background: var(--primary-light);
+          color: var(--primary);
           margin-bottom: 12px;
           font-size: 20px;
         }
@@ -758,26 +745,22 @@ function Dashboard() {
         }
 
         .add-contact-button {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          padding: 12px 24px;
-          border: none;
-          border-radius: 12px;
-          background: linear-gradient(
-            135deg,
-            #a78bfa 0%,
-            #8b5cf6 100%
-          );
-          color: #fff;
-          font-weight: 600;
-          font-size: 14px;
-          cursor: pointer;
-          box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
-        }
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 10px;
+                  padding: 12px 24px;
+                  border: none;
+                  border-radius: 12px;
+                  background: var(--primary);
+                  color: #fff;
+                  font-weight: 600;
+                  font-size: 14px;
+                  cursor: pointer;
+                  box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.18);
+                }
 
         .add-contact-button:hover {
-          box-shadow: 0 6px 28px rgba(139, 92, 246, 0.35);
+                  box-shadow: 0 6px 28px rgba(var(--primary-rgb), 0.28);
           transform: translateY(-2px);
         }
 
@@ -810,19 +793,19 @@ function Dashboard() {
           padding: 0 16px 0 48px;
           height: 48px;
           border-radius: 14px;
-          border: 1.5px solid #e9d5ff;
-          background: #ffffff;
+                  border: 1.5px solid var(--border);
+                  background: var(--surface);
           font-size: 14px;
           width: 100%;
           transition: all 0.3s ease;
           font-family: 'Inter', sans-serif;
-          color: #1e1b4b;
+                  color: var(--text-primary);
           outline: none;
         }
 
         .search-input:focus {
-          border-color: #a78bfa;
-          box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.12);
+                  border-color: var(--primary);
+                  box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.12);
         }
 
         .contact-count {
@@ -842,19 +825,20 @@ function Dashboard() {
         }
 
         .contact-card {
-          background: #ffffff;
-          border: 1px solid #e9d5ff;
-          border-radius: 16px;
+                  background: var(--surface);
+                  border: 1px solid var(--border);
+                  border-radius: var(--radius-lg);
           padding: 24px 24px 20px;
-          transition: all 0.3s ease;
-          animation: fadeInUp 0.4s ease;
-        }
+                  transition: all 0.25s var(--ease);
+                  animation: fadeInUp 0.36s var(--ease);
+                  box-shadow: var(--shadow-xs);
+                }
 
-        .contact-card:hover {
-          transform: translateY(-4px);
-          border-color: #c084fc;
-          box-shadow: 0 8px 32px rgba(139, 92, 246, 0.06);
-        }
+                .contact-card:hover {
+                  transform: translateY(-4px);
+                  border-color: var(--border-strong);
+                  box-shadow: var(--shadow-md);
+                }
 
         .contact-card-top {
           display: flex;
@@ -864,22 +848,19 @@ function Dashboard() {
         }
 
         .contact-avatar {
-          width: 48px;
-          height: 48px;
-          border-radius: 14px;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-          font-size: 16px;
-          background: linear-gradient(
-            135deg,
-            #f3e8ff 0%,
-            #e9d5ff 100%
-          );
-          color: #7c3aed;
-        }
+                  width: 48px;
+                  height: 48px;
+                  border-radius: 50%;
+                  flex-shrink: 0;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  font-size: 16px;
+                  background: linear-gradient(135deg, var(--primary), var(--sidebar-bg));
+                  color: #ffffff;
+                  box-shadow: 0 4px 14px rgba(var(--primary-rgb), 0.12);
+                }
 
         .contact-card-top h3 {
           margin: 0 0 4px;
@@ -892,8 +873,8 @@ function Dashboard() {
           display: inline-block;
           font-size: 11px;
           font-weight: 600;
-          color: #7c3aed;
-          background: #f3e8ff;
+                  color: var(--primary);
+                  background: var(--primary-light);
           padding: 2px 12px;
           border-radius: 100px;
         }
@@ -903,7 +884,7 @@ function Dashboard() {
           align-items: center;
           gap: 10px;
           font-size: 13px;
-          color: #6d5a8a;
+                  color: var(--text-secondary);
           margin: 8px 0;
         }
 
@@ -915,28 +896,26 @@ function Dashboard() {
         }
 
         .contact-card button {
-          width: 100%;
-          margin-top: 16px;
-          padding: 10px;
-          border-radius: 12px;
-          border: 1.5px solid #e9d5ff;
-          background: transparent;
-          color: #4c1d95;
-          font-weight: 600;
-          font-size: 13px;
-          transition: all 0.3s ease;
-          cursor: pointer;
-        }
+                  width: 100%;
+                  margin-top: 16px;
+                  padding: 10px;
+                  border-radius: 12px;
+                  border: 1.5px solid var(--border);
+                  background: transparent;
+                  color: var(--heading-color);
+                  font-weight: 600;
+                  font-size: 13px;
+                  transition: all 0.2s var(--ease);
+                  cursor: pointer;
+                }
 
-        .contact-card button:hover {
-          background: linear-gradient(
-            135deg,
-            #a78bfa 0%,
-            #8b5cf6 100%
-          );
-          border-color: #8b5cf6;
-          color: #fff;
-        }
+                .contact-card button:hover {
+                  background: var(--primary);
+                  border-color: var(--primary);
+                  color: #fff;
+                  box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.12);
+                  transform: translateY(-2px);
+                }
 
         .skeleton-card {
           cursor: default;
@@ -968,44 +947,40 @@ function Dashboard() {
         }
 
         .empty-state {
-          background: #ffffff;
-          border: 2px dashed #e9d5ff;
-          padding: 56px 32px;
-          border-radius: 16px;
-          text-align: center;
-        }
+                  background: var(--surface);
+                  border: 1.5px dashed var(--border-strong);
+                  padding: 56px 32px;
+                  border-radius: var(--radius-lg);
+                  text-align: center;
+                }
 
-        .empty-icon {
-          font-size: 48px;
-          margin-bottom: 16px;
-        }
+                .empty-icon {
+                  font-size: 48px;
+                  margin-bottom: 16px;
+                }
 
-        .empty-state h3 {
-          margin-bottom: 8px;
-          font-size: 18px;
-          font-weight: 600;
-          color: #1e1b4b;
-        }
+                .empty-state h3 {
+                  margin-bottom: 8px;
+                  font-size: 18px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                }
 
-        .empty-state p {
-          font-size: 14px;
-          color: #8b8a9e;
-        }
+                .empty-state p {
+                  font-size: 14px;
+                  color: var(--text-secondary);
+                }
 
-        .empty-state button {
-          margin-top: 20px;
-          padding: 12px 28px;
-          border-radius: 12px;
-          border: none;
-          background: linear-gradient(
-            135deg,
-            #a78bfa 0%,
-            #8b5cf6 100%
-          );
-          color: #fff;
-          font-weight: 600;
-          cursor: pointer;
-        }
+                .empty-state button {
+                  margin-top: 20px;
+                  padding: 12px 28px;
+                  border-radius: 12px;
+                  border: none;
+                  background: var(--primary);
+                  color: #fff;
+                  font-weight: 600;
+                  cursor: pointer;
+                }
 
         .pagination {
           display: flex;
@@ -1018,7 +993,7 @@ function Dashboard() {
         .pagination button {
           padding: 10px 22px;
           border-radius: 12px;
-          border: 1.5px solid #e9d5ff;
+          border: 1.5px solid var(--border);
           background: #ffffff;
           color: #4c1d95;
           font-weight: 600;
@@ -1323,266 +1298,291 @@ function Dashboard() {
             )}
 
             {/* Contacts Header */}
+
             <div className="contacts-header">
 
               <div>
                 <h2>
-                  📋 Contacts
+                  {view === 'contacts' ? '📋 Contacts' : '📊 Analytics'}
                 </h2>
 
                 <p>
-                  Manage your personal and professional connections
+                  {view === 'contacts' ? 'Manage your personal and professional connections' : 'Analytics and insights for your data'}
                 </p>
               </div>
 
               <div className="contact-actions">
 
-                <button
-                  className="add-contact-button"
-                  onClick={() =>
-                    navigate("/contacts/new")
-                  }
-                >
-                  <IconPlus />
-                  Add Contact
-                </button>
-
-              </div>
-
-            </div>
-
-            {/* Search */}
-            <div className="contacts-toolbar">
-
-              <div className="search-wrapper">
-
-                <span className="search-icon">
-                  <IconSearch />
-                </span>
-
-                <input
-                  className="search-input"
-                  type="text"
-                  placeholder="Search contacts..."
-                  value={search}
-                  onChange={handleSearch}
-                />
-
-              </div>
-
-              {!loading && !error && (
-                <span className="contact-count">
-                  {totalElements} contacts
-                </span>
-              )}
-
-            </div>
-
-            {/* Loading */}
-            {loading && (
-              <div className="contacts-grid">
-
-                {Array.from({
-                  length: pageSize,
-                }).map((_, i) => (
-                  <div
-                    className="contact-card skeleton-card"
-                    key={i}
+                <div style={{display: 'flex', gap: 8, alignItems: 'center'}}>
+                  <button
+                    className={view === 'contacts' ? 'add-contact-button' : 'add-contact-button'}
+                    onClick={() => setView('contacts')}
+                    style={view === 'contacts' ? { boxShadow: '0 6px 28px rgba(var(--primary-rgb), 0.28)', transform: 'translateY(-2px)' } : { background: 'transparent', border: '1.5px solid var(--border)', color: 'var(--heading-color)' }}
                   >
-                    <div
-                      className="skeleton skeleton-avatar"
-                    />
+                    Contacts
+                  </button>
+                  <button
+                    className={view === 'analytics' ? 'add-contact-button' : 'add-contact-button'}
+                    onClick={() => setView('analytics')}
+                    style={view === 'analytics' ? { boxShadow: '0 6px 28px rgba(var(--primary-rgb), 0.28)', transform: 'translateY(-2px)' } : { background: 'transparent', border: '1.5px solid var(--border)', color: 'var(--heading-color)' }}
+                  >
+                    Analytics
+                  </button>
+                </div>
 
-                    <div
-                      className="skeleton skeleton-line"
-                      style={{
-                        width: "60%",
-                        height: "16px",
-                      }}
-                    />
-
-                    <div
-                      className="skeleton skeleton-line"
-                      style={{
-                        width: "40%",
-                        height: "12px",
-                      }}
-                    />
-
-                    <div
-                      className="skeleton skeleton-line"
-                      style={{
-                        width: "80%",
-                        height: "12px",
-                      }}
-                    />
-
-                    <div
-                      className="skeleton skeleton-line"
-                      style={{
-                        width: "70%",
-                        height: "12px",
-                      }}
-                    />
-
-                    <div
-                      className="skeleton skeleton-line"
-                      style={{
-                        width: "100%",
-                        height: "40px",
-                        marginTop: "12px",
-                      }}
-                    />
-                  </div>
-                ))}
+                {view === 'contacts' && (
+                  <button
+                    className="add-contact-button"
+                    onClick={() =>
+                      navigate("/contacts/new")
+                    }
+                  >
+                    <IconPlus />
+                    Add Contact
+                  </button>
+                )}
 
               </div>
-            )}
 
-            {/* Error */}
-            {error && (
-              <div className="error-message">
-                ❌ {error}
-              </div>
-            )}
+            </div>
 
-            {/* Empty */}
-            {!loading &&
-              !error &&
-              contacts.length === 0 && (
-                <div className="empty-state">
+            {view === 'contacts' ? (
+              <>
+                {/* Search */}
+                <div className="contacts-toolbar">
 
-                  <div className="empty-icon">
-                    📭
+                  <div className="search-wrapper">
+
+                    <span className="search-icon">
+                      <IconSearch />
+                    </span>
+
+                    <input
+                      className="search-input"
+                      type="text"
+                      placeholder="Search contacts..."
+                      value={search}
+                      onChange={handleSearch}
+                    />
+
                   </div>
 
-                  <h3>
-                    {search
-                      ? "No Contacts Found"
-                      : "No Contacts Yet"}
-                  </h3>
-
-                  <p>
-                    {search
-                      ? "No matching contacts found."
-                      : "Start building your contact list."}
-                  </p>
-
-                  {!search && (
-                    <button
-                      onClick={() =>
-                        navigate("/contacts/new")
-                      }
-                    >
-                      ✨ Add Your First Contact
-                    </button>
+                  {!loading && !error && (
+                    <span className="contact-count">
+                      {totalElements} contacts
+                    </span>
                   )}
 
                 </div>
-              )}
 
-            {/* Contacts Grid */}
-            {!loading &&
-              !error &&
-              contacts.length > 0 && (
-                <div className="contacts-grid">
+                {/* Loading */}
+                {loading && (
+                  <div className="contacts-grid">
 
-                  {contacts.map((contact) => (
-                    <div
-                      className="contact-card"
-                      key={contact.id}
-                    >
-
-                      <div className="contact-card-top">
-
-                        <div className="contact-avatar">
-                          {getInitials(contact)}
-                        </div>
-
-                        <div>
-
-                          <h3>
-                            {contact.firstName}{" "}
-                            {contact.lastName}
-                          </h3>
-
-                          <span className="contact-title-badge">
-                            {contact.title ||
-                              "No title"}
-                          </span>
-
-                        </div>
-
-                      </div>
-
-                      <div className="contact-chip">
-
-                        <span className="chip-icon">
-                          <IconMail />
-                        </span>
-
-                        {contact.workEmail ||
-                          "N/A"}
-
-                      </div>
-
-                      <div className="contact-chip">
-
-                        <span className="chip-icon">
-                          <IconPhone />
-                        </span>
-
-                        {contact.workPhone ||
-                          "N/A"}
-
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/contacts/${contact.id}`
-                          )
-                        }
+                    {Array.from({
+                      length: pageSize,
+                    }).map((_, i) => (
+                      <div
+                        className="contact-card skeleton-card"
+                        key={i}
                       >
-                        View Details →
-                      </button>
+                        <div
+                          className="skeleton skeleton-avatar"
+                        />
+
+                        <div
+                          className="skeleton skeleton-line"
+                          style={{
+                            width: "60%",
+                            height: "16px",
+                          }}
+                        />
+
+                        <div
+                          className="skeleton skeleton-line"
+                          style={{
+                            width: "40%",
+                            height: "12px",
+                          }}
+                        />
+
+                        <div
+                          className="skeleton skeleton-line"
+                          style={{
+                            width: "80%",
+                            height: "12px",
+                          }}
+                        />
+
+                        <div
+                          className="skeleton skeleton-line"
+                          style={{
+                            width: "70%",
+                            height: "12px",
+                          }}
+                        />
+
+                        <div
+                          className="skeleton skeleton-line"
+                          style={{
+                            width: "100%",
+                            height: "40px",
+                            marginTop: "12px",
+                          }}
+                        />
+                      </div>
+                    ))}
+
+                  </div>
+                )}
+
+                {/* Error */}
+                {error && (
+                  <div className="error-message">
+                    ❌ {error}
+                  </div>
+                )}
+
+                {/* Empty */}
+                {!loading &&
+                  !error &&
+                  contacts.length === 0 && (
+                    <div className="empty-state">
+
+                      <div className="empty-icon">
+                        📭
+                      </div>
+
+                      <h3>
+                        {search
+                          ? "No Contacts Found"
+                          : "No Contacts Yet"}
+                      </h3>
+
+                      <p>
+                        {search
+                          ? "No matching contacts found."
+                          : "Start building your contact list."}
+                      </p>
+
+                      {!search && (
+                        <button
+                          onClick={() =>
+                            navigate("/contacts/new")
+                          }
+                        >
+                          ✨ Add Your First Contact
+                        </button>
+                      )}
 
                     </div>
-                  ))}
+                  )}
 
-                </div>
-              )}
+                {/* Contacts Grid */}
+                {!loading &&
+                  !error &&
+                  contacts.length > 0 && (
+                    <div className="contacts-grid">
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination">
+                      {contacts.map((contact) => (
+                        <div
+                          className="contact-card"
+                          key={contact.id}
+                        >
 
-                <button
-                  disabled={page === 0}
-                  onClick={() =>
-                    setPage(page - 1)
-                  }
-                >
-                  ← Previous
-                </button>
+                          <div className="contact-card-top">
 
-                <span>
-                  Page {page + 1} of{" "}
-                  {totalPages}
-                </span>
+                            <div className="contact-avatar">
+                              {getInitials(contact)}
+                            </div>
 
-                <button
-                  disabled={
-                    page >= totalPages - 1
-                  }
-                  onClick={() =>
-                    setPage(page + 1)
-                  }
-                >
-                  Next →
-                </button>
+                            <div>
 
-              </div>
+                              <h3>
+                                {contact.firstName} {" "}
+                                {contact.lastName}
+                              </h3>
+
+                              <span className="contact-title-badge">
+                                {contact.title ||
+                                  "No title"}
+                              </span>
+
+                            </div>
+
+                          </div>
+
+                          <div className="contact-chip">
+
+                            <span className="chip-icon">
+                              <IconMail />
+                            </span>
+
+                            {contact.workEmail ||
+                              "N/A"}
+
+                          </div>
+
+                          <div className="contact-chip">
+
+                            <span className="chip-icon">
+                              <IconPhone />
+                            </span>
+
+                            {contact.workPhone ||
+                              "N/A"}
+
+                          </div>
+
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/contacts/${contact.id}`
+                              )
+                            }
+                          >
+                            View Details →
+                          </button>
+
+                        </div>
+                      ))}
+
+                    </div>
+                  )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="pagination">
+
+                    <button
+                      disabled={page === 0}
+                      onClick={() =>
+                        setPage(page - 1)
+                      }
+                    >
+                      ← Previous
+                    </button>
+
+                    <span>
+                      Page {page + 1} of {totalPages}
+                    </span>
+
+                    <button
+                      disabled={
+                        page >= totalPages - 1
+                      }
+                      onClick={() =>
+                        setPage(page + 1)
+                      }
+                    >
+                      Next →
+                    </button>
+
+                  </div>
+                )}
+              </>
+            ) : (
+              <Analytics />
             )}
 
           </main>

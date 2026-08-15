@@ -14,7 +14,9 @@ class ErrorBoundary extends Component {
     super(props);
 
     this.state = {
-      hasError: false
+      hasError: false,
+      error: null,
+      errorInfo: null
     };
 
   }
@@ -36,6 +38,8 @@ class ErrorBoundary extends Component {
       error,
       errorInfo
     );
+
+    this.setState({ error, errorInfo });
 
   }
 
@@ -69,35 +73,49 @@ class ErrorBoundary extends Component {
           <div
             className="card"
             style={{
-              maxWidth: "450px",
-              padding: "40px",
-              textAlign: "center"
+              maxWidth: "720px",
+              padding: "28px",
+              textAlign: "left",
+              lineHeight: 1.4
             }}
           >
 
-            <h1>
-              Something went wrong
-            </h1>
+            <h1 style={{marginBottom:6}}>Something went wrong</h1>
 
-
-            <p style={{marginTop:"12px"}}>
-              We couldn't load this page.
-              Please refresh and try again.
+            <p style={{marginTop:6}}>
+              We couldn't load this page. Please refresh and try again.
             </p>
 
+            <div style={{marginTop:14}}>
+              <button
+                className="auth-button"
+                style={{marginRight:12}}
+                onClick={this.handleRefresh}
+              >
+                Refresh Page
+              </button>
+              <button
+                className="auth-button"
+                onClick={() => window.navigator.clipboard?.writeText(JSON.stringify({
+                  error: this.state.error?.toString(),
+                  stack: this.state.errorInfo?.componentStack
+                }))}
+              >
+                Copy error
+              </button>
+            </div>
 
-            <button
-              className="auth-button"
-              style={{
-                marginTop:"25px"
-              }}
-              onClick={this.handleRefresh}
-            >
-
-              Refresh Page
-
-            </button>
-
+            {this.state.error && (
+              <details style={{marginTop:16, whiteSpace:'pre-wrap', background:'#fff', padding:12, borderRadius:8, border:'1px solid #eee'}}>
+                <summary style={{cursor:'pointer', fontWeight:600}}>View error details</summary>
+                <div style={{marginTop:8, color:'#111'}}>
+                  <div><strong>Message:</strong> {this.state.error?.toString()}</div>
+                  <div style={{marginTop:8}}><strong>Stack:</strong>
+                    <pre style={{fontSize:12, overflowX:'auto'}}>{this.state.errorInfo?.componentStack}</pre>
+                  </div>
+                </div>
+              </details>
+            )}
 
           </div>
 
