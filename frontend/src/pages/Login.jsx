@@ -145,16 +145,28 @@ function Login() {
         }
 
         /* ===== LEFT PANEL - PASTEL BRAND ===== */
-        .auth-brand {
-          position: relative;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 60px 56px;
-          background: linear-gradient(155deg, #1E3A5F 0%, #12323f 55%);
-          color: #fff;
-        }
+       .auth-brand {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 56px;
+  background: linear-gradient(155deg, #1E3A5F 0%, #12323f 55%);
+  color: #fff;
+}
+
+.brand-logo-wrapper span {
+  color: #fff;
+}
+
+.brand-content h1 {
+  color: #fff;
+}
+
+.brand-content .subtitle {
+  color: rgba(255, 255, 255, 0.85);
+}
 
         .auth-brand .orb-1 {
           position: absolute;
