@@ -5,13 +5,17 @@ import java.util.List;
 public class AnalyticsResponse {
 
     private List<String> months;
-    private List<Integer> revenueMonthly;
-    private List<String> activeMonths;
-    private List<Integer> activeUsers;
-    private long totalRevenue;
-    private int newUsersPercent;
-    private int tasksCompletedPercent;
-    private List<Integer> projectStatus;
+    private List<Integer> monthlyContacts;
+
+    private List<String> recentMonths;
+    private List<Integer> recentContacts;
+
+    private long totalContacts;
+
+    private int newContactsPercent;
+    private int contactsWithTitlePercent;
+
+    private List<Integer> contactStatus;
 
     public AnalyticsResponse() {
     }
@@ -24,59 +28,59 @@ public class AnalyticsResponse {
         this.months = months;
     }
 
-    public List<Integer> getRevenueMonthly() {
-        return revenueMonthly;
+    public List<Integer> getMonthlyContacts() {
+        return monthlyContacts;
     }
 
-    public void setRevenueMonthly(List<Integer> revenueMonthly) {
-        this.revenueMonthly = revenueMonthly;
+    public void setMonthlyContacts(List<Integer> monthlyContacts) {
+        this.monthlyContacts = monthlyContacts;
     }
 
-    public List<String> getActiveMonths() {
-        return activeMonths;
+    public List<String> getRecentMonths() {
+        return recentMonths;
     }
 
-    public void setActiveMonths(List<String> activeMonths) {
-        this.activeMonths = activeMonths;
+    public void setRecentMonths(List<String> recentMonths) {
+        this.recentMonths = recentMonths;
     }
 
-    public List<Integer> getActiveUsers() {
-        return activeUsers;
+    public List<Integer> getRecentContacts() {
+        return recentContacts;
     }
 
-    public void setActiveUsers(List<Integer> activeUsers) {
-        this.activeUsers = activeUsers;
+    public void setRecentContacts(List<Integer> recentContacts) {
+        this.recentContacts = recentContacts;
     }
 
-    public long getTotalRevenue() {
-        return totalRevenue;
+    public long getTotalContacts() {
+        return totalContacts;
     }
 
-    public void setTotalRevenue(long totalRevenue) {
-        this.totalRevenue = totalRevenue;
+    public void setTotalContacts(long totalContacts) {
+        this.totalContacts = totalContacts;
     }
 
-    public int getNewUsersPercent() {
-        return newUsersPercent;
+    public int getNewContactsPercent() {
+        return newContactsPercent;
     }
 
-    public void setNewUsersPercent(int newUsersPercent) {
-        this.newUsersPercent = newUsersPercent;
+    public void setNewContactsPercent(int newContactsPercent) {
+        this.newContactsPercent = newContactsPercent;
     }
 
-    public int getTasksCompletedPercent() {
-        return tasksCompletedPercent;
+    public int getContactsWithTitlePercent() {
+        return contactsWithTitlePercent;
     }
 
-    public void setTasksCompletedPercent(int tasksCompletedPercent) {
-        this.tasksCompletedPercent = tasksCompletedPercent;
+    public void setContactsWithTitlePercent(int contactsWithTitlePercent) {
+        this.contactsWithTitlePercent = contactsWithTitlePercent;
     }
 
-    public List<Integer> getProjectStatus() {
-        return projectStatus;
+    public List<Integer> getContactStatus() {
+        return contactStatus;
     }
 
-    public void setProjectStatus(List<Integer> projectStatus) {
-        this.projectStatus = projectStatus;
+    public void setContactStatus(List<Integer> contactStatus) {
+        this.contactStatus = contactStatus;
     }
 }

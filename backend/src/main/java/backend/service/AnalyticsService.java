@@ -10,7 +10,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,67 +27,204 @@ public class AnalyticsService {
     }
 
     public AnalyticsResponse getAnalyticsForUser(User user) {
+
         List<Contact> contacts = contactRepository.findByUser(user);
 
-        // compute totals and simple monthly series for the last 7 months
         ZoneId zone = ZoneId.systemDefault();
         LocalDate now = LocalDate.now(zone);
 
+        /*
+         * Build the last 7 months including the current month.
+         */
         List<LocalDate> months = new ArrayList<>();
+
         for (int i = 6; i >= 0; i--) {
-            months.add(now.minusMonths(i).withDayOfMonth(1));
+            months.add(
+                    now.minusMonths(i)
+                            .withDayOfMonth(1)
+            );
         }
 
         List<String> monthLabels = months.stream()
-                .map(m -> m.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
+                .map(month ->
+                        month.getMonth()
+                                .getDisplayName(
+                                        TextStyle.SHORT,
+                                        Locale.ENGLISH
+                                )
+                )
                 .collect(Collectors.toList());
 
-        // map contacts by month
-        Map<String, Integer> counts = new HashMap<>();
-        for (LocalDate m : months) counts.put(m.toString(), 0);
+        /*
+         * Count contacts created in each month.
+         */
+        Map<String, Integer> monthlyCounts = new HashMap<>();
 
-        for (Contact c : contacts) {
-            Instant created = c.getCreatedAt();
-            LocalDate d = created == null ? now : Instant.ofEpochMilli(created.toEpochMilli()).atZone(zone).toLocalDate();
-            LocalDate monthStart = d.withDayOfMonth(1);
-            String key = monthStart.toString();
-            if (counts.containsKey(key)) counts.put(key, counts.get(key) + 1);
+        for (LocalDate month : months) {
+            monthlyCounts.put(month.toString(), 0);
         }
 
-        List<Integer> revenueMonthly = months.stream()
-                .map(m -> counts.getOrDefault(m.toString(), 0))
+        for (Contact contact : contacts) {
+
+            Instant createdAt = contact.getCreatedAt();
+
+            if (createdAt == null) {
+                continue;
+            }
+
+            LocalDate createdDate = createdAt
+                    .atZone(zone)
+                    .toLocalDate();
+
+            LocalDate monthStart =
+                    createdDate.withDayOfMonth(1);
+
+            String monthKey = monthStart.toString();
+
+            if (monthlyCounts.containsKey(monthKey)) {
+
+                monthlyCounts.put(
+                        monthKey,
+                        monthlyCounts.get(monthKey) + 1
+                );
+            }
+        }
+
+        List<Integer> monthlyContacts = months.stream()
+                .map(month ->
+                        monthlyCounts.getOrDefault(
+                                month.toString(),
+                                0
+                        )
+                )
                 .collect(Collectors.toList());
 
-        // active users = same as revenueMonthly for this simplified analytics
-        List<Integer> activeUsers = new ArrayList<>(revenueMonthly);
+        /*
+         * Recent contact activity uses the latest 6 months.
+         */
+        int recentStartIndex =
+                Math.max(0, monthLabels.size() - 6);
 
+        List<String> recentMonths =
+                monthLabels.subList(
+                        recentStartIndex,
+                        monthLabels.size()
+                );
+
+        List<Integer> recentContacts =
+                monthlyContacts.subList(
+                        recentStartIndex,
+                        monthlyContacts.size()
+                );
+
+        /*
+         * Total number of contacts belonging to this user.
+         */
         long totalContacts = contacts.size();
 
-        int newUsersPercent = 0;
-        if (revenueMonthly.size() >= 2) {
-            int last = revenueMonthly.get(revenueMonthly.size() - 1);
-            int prev = revenueMonthly.get(revenueMonthly.size() - 2);
-            newUsersPercent = prev == 0 ? (last > 0 ? 100 : 0) : (int) ((last - prev) * 100.0 / prev);
+        /*
+         * Calculate month-over-month contact growth.
+         */
+        int newContactsPercent = 0;
+
+        if (monthlyContacts.size() >= 2) {
+
+            int lastMonth =
+                    monthlyContacts.get(
+                            monthlyContacts.size() - 1
+                    );
+
+            int previousMonth =
+                    monthlyContacts.get(
+                            monthlyContacts.size() - 2
+                    );
+
+            if (previousMonth == 0) {
+
+                newContactsPercent =
+                        lastMonth > 0 ? 100 : 0;
+
+            } else {
+
+                newContactsPercent =
+                        (int) (
+                                (lastMonth - previousMonth)
+                                        * 100.0
+                                        / previousMonth
+                        );
+            }
         }
 
-        // tasksCompletedPercent: percentage of contacts that have a title set
-        long withTitle = contacts.stream().filter(c -> c.getTitle() != null && !c.getTitle().isBlank()).count();
-        int tasksCompletedPercent = totalContacts == 0 ? 0 : (int) (withTitle * 100 / totalContacts);
+        /*
+         * Contacts with a title are considered
+         * contacts with complete professional details.
+         */
+        long contactsWithTitle =
+                contacts.stream()
+                        .filter(contact ->
+                                contact.getTitle() != null
+                                        && !contact.getTitle().isBlank()
+                        )
+                        .count();
 
-        // projectStatus: [onTrack, atRisk] -> use withTitle vs without
-        int onTrack = (int) withTitle;
-        int atRisk = (int) (totalContacts - withTitle);
+        int contactsWithTitlePercent =
+                totalContacts == 0
+                        ? 0
+                        : (int) (
+                                contactsWithTitle
+                                        * 100
+                                        / totalContacts
+                        );
 
-        AnalyticsResponse resp = new AnalyticsResponse();
-        resp.setMonths(monthLabels);
-        resp.setRevenueMonthly(revenueMonthly);
-        resp.setActiveMonths(monthLabels.subList(Math.max(0, monthLabels.size()-6), monthLabels.size()));
-        resp.setActiveUsers(activeUsers.subList(Math.max(0, activeUsers.size()-6), activeUsers.size()));
-        resp.setTotalRevenue(totalContacts);
-        resp.setNewUsersPercent(newUsersPercent);
-        resp.setTasksCompletedPercent(tasksCompletedPercent);
-        resp.setProjectStatus(Arrays.asList(onTrack, atRisk));
+        /*
+         * Contact status:
+         * [contacts with title, contacts without title]
+         */
+        int completeContacts =
+                (int) contactsWithTitle;
 
-        return resp;
+        int contactsNeedingDetails =
+                (int) (
+                        totalContacts
+                                - contactsWithTitle
+                );
+
+        AnalyticsResponse response =
+                new AnalyticsResponse();
+
+        response.setMonths(monthLabels);
+
+        response.setMonthlyContacts(
+                monthlyContacts
+        );
+
+        response.setRecentMonths(
+                recentMonths
+        );
+
+        response.setRecentContacts(
+                recentContacts
+        );
+
+        response.setTotalContacts(
+                totalContacts
+        );
+
+        response.setNewContactsPercent(
+                newContactsPercent
+        );
+
+        response.setContactsWithTitlePercent(
+                contactsWithTitlePercent
+        );
+
+        response.setContactStatus(
+                List.of(
+                        completeContacts,
+                        contactsNeedingDetails
+                )
+        );
+
+        return response;
     }
 }
