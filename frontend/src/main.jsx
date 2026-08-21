@@ -96,10 +96,18 @@ class ErrorBoundary extends Component {
               </button>
               <button
                 className="auth-button"
-                onClick={() => window.navigator.clipboard?.writeText(JSON.stringify({
-                  error: this.state.error?.toString(),
-                  stack: this.state.errorInfo?.componentStack
-                }))}
+                onClick={async () => {
+  try {
+    await window.navigator.clipboard?.writeText(
+      JSON.stringify({
+        error: this.state.error?.toString(),
+        stack: this.state.errorInfo?.componentStack
+      })
+    );
+  } catch (error) {
+    console.error("Could not copy error details:", error);
+  }
+}}
               >
                 Copy error
               </button>
