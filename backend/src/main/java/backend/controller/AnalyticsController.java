@@ -20,36 +20,70 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:5173")
 public class AnalyticsController {
 
-    private static final Logger log = LoggerFactory.getLogger(AnalyticsController.class);
+    private static final Logger log =
+            LoggerFactory.getLogger(AnalyticsController.class);
 
     private final AnalyticsService analyticsService;
     private final UserRepository userRepository;
 
-    public AnalyticsController(AnalyticsService analyticsService, UserRepository userRepository) {
+    public AnalyticsController(
+            AnalyticsService analyticsService,
+            UserRepository userRepository) {
+
         this.analyticsService = analyticsService;
         this.userRepository = userRepository;
     }
 
     @GetMapping
-    public ResponseEntity<?> getAnalytics(Authentication authentication) {
+    public ResponseEntity<?> getAnalytics(
+            Authentication authentication) {
+
         try {
+
             if (authentication == null) {
-                log.warn("Unauthenticated request to analytics endpoint");
-                return ResponseEntity.status(401).body("Unauthenticated");
+
+                log.warn(
+                        "Unauthenticated request to analytics endpoint"
+                );
+
+                return ResponseEntity
+                        .status(401)
+                        .body("Unauthenticated");
             }
 
             String email = authentication.getName();
-            Optional<User> userOpt = userRepository.findByEmail(email);
+
+            Optional<User> userOpt =
+                    userRepository.findByEmail(email);
+
             if (userOpt.isEmpty()) {
-                log.warn("Analytics requested by unknown user: {}", email);
-                return ResponseEntity.status(404).body("User not found");
+
+                log.warn(
+                        "Analytics requested by unknown user"
+                );
+
+                return ResponseEntity
+                        .status(404)
+                        .body("User not found");
             }
 
-            AnalyticsResponse resp = analyticsService.getAnalyticsForUser(userOpt.get());
+            AnalyticsResponse resp =
+                    analyticsService.getAnalyticsForUser(
+                            userOpt.get()
+                    );
+
             return ResponseEntity.ok(resp);
+
         } catch (Exception ex) {
-            log.error("Failed to compute analytics", ex);
-            return ResponseEntity.status(500).body("Analytics error: " + ex.getMessage());
+
+            log.error(
+                    "Failed to compute analytics",
+                    ex
+            );
+
+            return ResponseEntity
+                    .status(500)
+                    .body("Analytics error: " + ex.getMessage());
         }
     }
 }
