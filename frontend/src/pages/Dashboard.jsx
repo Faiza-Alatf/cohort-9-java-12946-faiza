@@ -119,6 +119,22 @@ const IconUpload = () => (
   </svg>
 );
 
+const IconDownload = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M12 4v12" />
+    <polyline points="7 11 12 16 17 11" />
+    <path d="M4 20h16" />
+  </svg>
+);
+
+const IconContacts = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="3" y="4" width="18" height="16" rx="3" />
+    <circle cx="9" cy="10" r="2" />
+    <path d="M5.8 16c.8-2 2-3 3.2-3s2.4 1 3.2 3M15 9h3M15 13h3M15 17h2" />
+  </svg>
+);
+
 function Dashboard() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -1178,7 +1194,7 @@ function Dashboard() {
               className="sidebar-link"
               onClick={handleExport}
             >
-              📥
+              <IconDownload />
               Export Contacts
             </button>
 
@@ -1205,7 +1221,7 @@ function Dashboard() {
             <div className="dashboard-header-left">
 
               <div className="greeting-icon">
-                👋
+                <IconContacts />
               </div>
 
               <div>
@@ -1246,7 +1262,7 @@ function Dashboard() {
                 className="export-button"
                 onClick={handleExport}
               >
-                📥 Export CSV
+                <IconDownload /> Export CSV
               </button>
 
               <button
@@ -1269,7 +1285,7 @@ function Dashboard() {
               <div className="stat-card">
 
                 <div className="stat-icon">
-                  📇
+                  <IconContacts />
                 </div>
 
                 <span>
@@ -1303,7 +1319,7 @@ function Dashboard() {
 
               <div>
                 <h2>
-                  {view === 'contacts' ? '📋 Contacts' : '📊 Analytics'}
+                  {view === 'contacts' ? 'Contacts' : 'Analytics'}
                 </h2>
 
                 <p>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
  /* ===== Navy + Teal Theme (requested) ===== */
@@ -19,7 +19,7 @@
  --text-muted: #889096;
  --heading-color: #1E3A5F; /* Navy headings */
 
- --background: #F5F7FA; /* Main dashboard background */
+ --background: #eef4f5; /* Main dashboard background */
  --surface: #ffffff; /* white cards */
 
  --border: #e6eef2; /* very subtle gray border */
@@ -46,7 +46,8 @@
  --radius-lg: 16px;
  --radius-full: 999px;
 
-  --font-family: inter, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
+   --font-family: "DM Sans", system-ui, sans-serif;
+   --font-display: "Space Grotesk", "DM Sans", sans-serif;
  --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
  font-family: var(--font-family);
@@ -73,7 +74,9 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--background);
+  background:
+    radial-gradient(circle at 88% 4%, rgba(20, 184, 166, 0.11), transparent 24rem),
+    linear-gradient(135deg, #f7fbfb 0%, var(--background) 52%, #e8f0f1 100%);
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.6;
@@ -90,6 +93,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   color: var(--heading-color);
   letter-spacing: -0.015em;
+  font-family: var(--font-display);
 }
 
 h1 { font-size: 1.65rem; line-height: 1.25; }
