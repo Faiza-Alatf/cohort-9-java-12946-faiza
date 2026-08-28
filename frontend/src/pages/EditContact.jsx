@@ -351,7 +351,7 @@ function EditContact() {
        .form-group input:focus {
   border-color: var(--primary);
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2);
+  box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.25);
 }
 
         /* ===== SECTION HEADERS ===== */
