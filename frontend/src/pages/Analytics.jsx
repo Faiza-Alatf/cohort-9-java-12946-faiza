@@ -152,187 +152,37 @@ function Analytics() {
       : `${growthPercent}%`;
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "2fr 1fr",
-        gap: 18,
-      }}
-    >
-      {/* Monthly Contact Activity */}
+    <>
+      <style>
+        {`
+          @media (max-width: 600px) {
+            .analytics-main-grid {
+              grid-template-columns: 1fr !important;
+            }
+
+            .analytics-bottom-grid {
+              grid-template-columns: 1fr !important;
+            }
+          }
+        `}
+      </style>
+
       <div
+        className="analytics-main-grid"
         style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          borderRadius: 16,
-          padding: 18,
-          boxShadow: "var(--shadow-xs)",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 700,
-            color: "var(--heading-color)",
-            marginBottom: 8,
-          }}
-        >
-          Contact Growth
-        </div>
-
-        <div style={{ height: 220 }}>
-          <Line
-            data={areaData}
-            options={{
-              plugins: {
-                legend: {
-                  display: false,
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: {
-                    color: "rgba(16,24,40,0.04)",
-                  },
-                },
-              },
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
-        {/* Total Contacts */}
-        <div
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: 18,
-            minHeight: 120,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 14,
-              color: "var(--heading-color)",
-              marginBottom: 6,
-            }}
-          >
-            TOTAL CONTACTS
-          </div>
-
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: 800,
-            }}
-          >
-            {data.totalContacts.toLocaleString()}
-          </div>
-        </div>
-
-        {/* New Contacts */}
-        <div
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: 18,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 14,
-              color: "var(--heading-color)",
-              marginBottom: 6,
-            }}
-          >
-            CONTACT GROWTH
-          </div>
-
-          <div
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-            }}
-          >
-            {growthText}
-          </div>
-        </div>
-
-        {/* Contact Completeness */}
-        <div
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: 18,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 14,
-              color: "var(--heading-color)",
-              marginBottom: 6,
-            }}
-          >
-            CONTACTS WITH TITLE
-          </div>
-
-          <div
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-            }}
-          >
-            {data.contactsWithTitlePercent}%
-          </div>
-
-          <div
-            style={{
-              height: 8,
-              background: "rgba(16,24,40,0.06)",
-              borderRadius: 8,
-              marginTop: 12,
-            }}
-          >
-            <div
-              style={{
-                width: `${data.contactsWithTitlePercent}%`,
-                height: 8,
-                background: "var(--primary)",
-                borderRadius: 8,
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Analytics */}
-      <div
-        style={{
-          gridColumn: "1 / -1",
           display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
+          gridTemplateColumns: "2fr 1fr",
           gap: 18,
-          marginTop: 8,
         }}
       >
-        {/* Recent Contact Activity */}
+        {/* Monthly Contact Activity */}
         <div
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: 16,
+            borderRadius: 16,
+            padding: 18,
+            boxShadow: "var(--shadow-xs)",
           }}
         >
           <div
@@ -342,12 +192,12 @@ function Analytics() {
               marginBottom: 8,
             }}
           >
-            Recent Contact Activity
+            Contact Growth
           </div>
 
-          <div style={{ height: 120 }}>
-            <Bar
-              data={barData}
+          <div style={{ height: 220 }}>
+            <Line
+              data={areaData}
               options={{
                 plugins: {
                   legend: {
@@ -357,6 +207,9 @@ function Analytics() {
                 scales: {
                   y: {
                     beginAtZero: true,
+                    grid: {
+                      color: "rgba(16,24,40,0.04)",
+                    },
                   },
                 },
               }}
@@ -364,101 +217,266 @@ function Analytics() {
           </div>
         </div>
 
-        {/* Contact Completeness */}
+        {/* Summary Cards */}
         <div
           style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: 16,
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
+            gap: 12,
           }}
         >
+          {/* Total Contacts */}
           <div
             style={{
-              fontWeight: 700,
-              color: "var(--heading-color)",
-            }}
-          >
-            Contact Completeness
-          </div>
-
-          <div
-            style={{
-              fontSize: 36,
-              fontWeight: 800,
-              marginTop: 8,
-            }}
-          >
-            {data.contactsWithTitlePercent}%
-          </div>
-
-          <div
-            style={{
-              height: 8,
-              width: "100%",
-              marginTop: 12,
-              background: "rgba(16,24,40,0.06)",
-              borderRadius: 8,
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 18,
+              minHeight: 120,
             }}
           >
             <div
               style={{
-                width: `${data.contactsWithTitlePercent}%`,
-                height: 8,
-                background: "var(--primary)",
-                borderRadius: 8,
+                fontSize: 14,
+                color: "var(--heading-color)",
+                marginBottom: 6,
               }}
-            />
+            >
+              TOTAL CONTACTS
+            </div>
+
+            <div
+              style={{
+                fontSize: 28,
+                fontWeight: 800,
+              }}
+            >
+              {data.totalContacts.toLocaleString()}
+            </div>
+          </div>
+
+          {/* New Contacts */}
+          <div
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 18,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 14,
+                color: "var(--heading-color)",
+                marginBottom: 6,
+              }}
+            >
+              CONTACT GROWTH
+            </div>
+
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+              }}
+            >
+              {growthText}
+            </div>
+          </div>
+
+          {/* Contact Completeness */}
+          <div
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 18,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 14,
+                color: "var(--heading-color)",
+                marginBottom: 6,
+              }}
+            >
+              CONTACTS WITH TITLE
+            </div>
+
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+              }}
+            >
+              {data.contactsWithTitlePercent}%
+            </div>
+
+            <div
+              style={{
+                height: 8,
+                background: "rgba(16,24,40,0.06)",
+                borderRadius: 8,
+                marginTop: 12,
+              }}
+            >
+              <div
+                style={{
+                  width: `${data.contactsWithTitlePercent}%`,
+                  height: 8,
+                  background: "var(--primary)",
+                  borderRadius: 8,
+                }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Contact Status */}
+        {/* Bottom Analytics */}
         <div
+          className="analytics-bottom-grid"
           style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            padding: 16,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
+            gridColumn: "1 / -1",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: 18,
+            marginTop: 8,
           }}
         >
+          {/* Recent Contact Activity */}
           <div
             style={{
-              fontWeight: 700,
-              color: "var(--heading-color)",
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 16,
             }}
           >
-            Contact Status
+            <div
+              style={{
+                fontWeight: 700,
+                color: "var(--heading-color)",
+                marginBottom: 8,
+              }}
+            >
+              Recent Contact Activity
+            </div>
+
+            <div style={{ height: 120 }}>
+              <Bar
+                data={barData}
+                options={{
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                    },
+                  },
+                }}
+              />
+            </div>
           </div>
 
+          {/* Contact Completeness */}
           <div
             style={{
-              width: 120,
-              height: 120,
-              marginTop: 8,
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            <Doughnut
-              data={doughnutData}
-              options={{
-                plugins: {
-                  legend: {
-                    position: "bottom",
-                  },
-                },
+            <div
+              style={{
+                fontWeight: 700,
+                color: "var(--heading-color)",
               }}
-            />
+            >
+              Contact Completeness
+            </div>
+
+            <div
+              style={{
+                fontSize: 36,
+                fontWeight: 800,
+                marginTop: 8,
+              }}
+            >
+              {data.contactsWithTitlePercent}%
+            </div>
+
+            <div
+              style={{
+                height: 8,
+                width: "100%",
+                marginTop: 12,
+                background: "rgba(16,24,40,0.06)",
+                borderRadius: 8,
+              }}
+            >
+              <div
+                style={{
+                  width: `${data.contactsWithTitlePercent}%`,
+                  height: 8,
+                  background: "var(--primary)",
+                  borderRadius: 8,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Contact Status */}
+          <div
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                fontWeight: 700,
+                color: "var(--heading-color)",
+              }}
+            >
+              Contact Status
+            </div>
+
+            <div
+              style={{
+                width: 120,
+                height: 120,
+                marginTop: 8,
+              }}
+            >
+              <Doughnut
+                data={doughnutData}
+                options={{
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                    },
+                  },
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
