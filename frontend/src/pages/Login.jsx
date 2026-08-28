@@ -452,29 +452,29 @@ function Login() {
           top: 9px;
           transform: scale(0.8);
           transform-origin: left center;
-          color: #818cf8;
+          color: var(--primary);
           font-weight: 600;
           background: #ffffff;
           padding: 0 4px;
         }
 
         .form-group.floating input:focus + label {
-          color: #818cf8;
+          color: var(--primary);
         }
 
         /* Submit Button */
         .auth-button {
           width: 100%;
-                  padding: 14px 20px;
+          padding: 14px 20px;
           margin-top: 8px;
           border: none;
           border-radius: 12px;
-                  background: var(--primary);
+          background: var(--primary);
           color: #fff;
           font-size: 15px;
           font-weight: 600;
           letter-spacing: 0.01em;
-                  box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.18);
+          box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.18);
           height: 56px;
           display: flex;
           align-items: center;
