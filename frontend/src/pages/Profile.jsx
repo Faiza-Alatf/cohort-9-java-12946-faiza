@@ -340,9 +340,9 @@ useEffect(() => {
           transition: all 0.3s ease;
         }
 
-       .detail-item:hover {
+   .detail-item:hover {
   border-color: var(--border-strong);
-  background: #f5f0ff;
+  background: var(--primary-light);
 }
         .detail-item .detail-label {
           display: flex;
