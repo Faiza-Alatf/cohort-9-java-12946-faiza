@@ -203,7 +203,7 @@ useEffect(() => {
           cursor: pointer;
           background: rgba(var(--primary-rgb), 0.06);
           border: 1.5px solid var(--border-strong);
-          color: var(--primary);
+         color: var(--heading-color);
         }
 
         .back-button:hover {
