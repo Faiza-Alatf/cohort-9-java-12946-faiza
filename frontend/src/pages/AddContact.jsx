@@ -263,12 +263,11 @@ function AddContact() {
           background: var(--surface);
         }
 
-        .form-group input:focus {
-          border-color: var(--border-strong);
-          background: #ffffff;
-          box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.12);
-        }
-
+       .form-group input:focus {
+  border-color: var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2);
+}
         /* ===== SECTION HEADERS ===== */
         .form-section-title {
           font-size: 13px;
