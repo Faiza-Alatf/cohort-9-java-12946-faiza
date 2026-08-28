@@ -473,20 +473,19 @@ function Dashboard() {
                   box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.15);
                 }
 
-        .sidebar-logo-text {
-          font-weight: 700;
-          font-size: 18px;
-          color: #4c1d95;
-          letter-spacing: -0.01em;
-        }
+       .sidebar-logo-text {
+  font-weight: 700;
+  font-size: 18px;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
 
-        .sidebar-logo-text small {
-          display: block;
-          font-size: 11px;
-          font-weight: 400;
-          color: #8b8a9e;
-        }
-
+.sidebar-logo-text small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+}
         .sidebar-nav {
           display: flex;
           flex-direction: column;
