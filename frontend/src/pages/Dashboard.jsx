@@ -473,7 +473,7 @@ function Dashboard() {
                   box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.15);
                 }
 
-       .sidebar-logo-text {
+      .sidebar-logo-text {
   font-weight: 700;
   font-size: 18px;
   color: #ffffff;
