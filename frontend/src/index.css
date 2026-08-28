@@ -4,11 +4,11 @@
 
 :root {
  /* ===== Navy + Teal Theme (requested) ===== */
- --primary: #14B8A6; /* Teal primary for actions */
- --primary-hover: #0e9a94;
+ --primary: #0F766E;
+--primary-hover: #115E59;
  --primary-active: #0b807b;
  --primary-light: rgba(20, 184, 166, 0.08);
- --primary-rgb: 20, 184, 166;
+ --primary-rgb: 15, 118, 110;
 
   --success: #059669;
   --success-light: #ecfdf5;
