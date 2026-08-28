@@ -151,6 +151,8 @@ function Dashboard() {
   const [importMessage, setImportMessage] = useState("");
   const [importError, setImportError] = useState("");
   const [view, setView] = useState('contacts');
+  const [analyticsRefreshToken, setAnalyticsRefreshToken] = useState(0);
+  
 
   const pageSize = 6;
 
@@ -318,24 +320,27 @@ function Dashboard() {
       const errors =
         response.data?.errors || [];
 
-      if (importedCount > 0) {
-        setImportMessage(
-          `${importedCount} contact${
-            importedCount !== 1 ? "s" : ""
-          } imported successfully.${
-            skippedCount > 0
-              ? ` ${skippedCount} row${
-                  skippedCount !== 1 ? "s" : ""
-                } skipped.`
-              : ""
-          }`
-        );
+     if (importedCount > 0) {
+  setImportMessage(
+    `${importedCount} contact${
+      importedCount !== 1 ? "s" : ""
+    } imported successfully.${
+      skippedCount > 0
+        ? ` ${skippedCount} row${
+            skippedCount !== 1 ? "s" : ""
+          } skipped.`
+        : ""
+    }`
+  );
 
-        if (page === 0) {
+  if (page === 0) {
     await fetchContacts();
-} else {
+  } else {
     setPage(0);
-}
+  }
+
+  setAnalyticsRefreshToken((prev) => prev + 1);
+
       } else if (skippedCount > 0) {
         setImportError(
           `No contacts were imported. ${skippedCount} row${
@@ -1597,7 +1602,7 @@ function Dashboard() {
                 )}
               </>
             ) : (
-              <Analytics />
+              <Analytics refreshToken={analyticsRefreshToken} />
             )}
 
           </main>
