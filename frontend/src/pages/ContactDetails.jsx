@@ -340,7 +340,7 @@ function ContactDetails() {
         }
 
         .contact-details-header p {
-          color: var(--primary);
+         color: var(--heading-color);
           font-weight: 600;
           font-size: 14px;
           margin-top: 4px;
