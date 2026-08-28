@@ -20,70 +20,58 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:5173")
 public class AnalyticsController {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(AnalyticsController.class);
 
-    private final AnalyticsService analyticsService;
-    private final UserRepository userRepository;
+private static final Logger log =
+        LoggerFactory.getLogger(AnalyticsController.class);
 
-    public AnalyticsController(
-            AnalyticsService analyticsService,
-            UserRepository userRepository) {
+private final AnalyticsService analyticsService;
+private final UserRepository userRepository;
 
-        this.analyticsService = analyticsService;
-        this.userRepository = userRepository;
+public AnalyticsController(
+        AnalyticsService analyticsService,
+        UserRepository userRepository) {
+
+    this.analyticsService = analyticsService;
+    this.userRepository = userRepository;
+}
+
+@GetMapping
+public ResponseEntity<?> getAnalytics(
+        Authentication authentication) {
+
+    if (authentication == null) {
+
+        log.warn(
+                "Unauthenticated request to analytics endpoint"
+        );
+
+        return ResponseEntity
+                .status(401)
+                .body("Unauthenticated");
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAnalytics(
-            Authentication authentication) {
+    String email = authentication.getName();
 
-        try {
+    Optional<User> userOpt =
+            userRepository.findByEmail(email);
 
-            if (authentication == null) {
+    if (userOpt.isEmpty()) {
 
-                log.warn(
-                        "Unauthenticated request to analytics endpoint"
-                );
+        log.warn(
+                "Analytics requested by unknown user"
+        );
 
-                return ResponseEntity
-                        .status(401)
-                        .body("Unauthenticated");
-            }
+        return ResponseEntity
+                .status(404)
+                .body("User not found");
+    }
 
-            String email = authentication.getName();
-
-            Optional<User> userOpt =
-                    userRepository.findByEmail(email);
-
-            if (userOpt.isEmpty()) {
-
-                log.warn(
-                        "Analytics requested by unknown user"
-                );
-
-                return ResponseEntity
-                        .status(404)
-                        .body("User not found");
-            }
-
-            AnalyticsResponse resp =
-                    analyticsService.getAnalyticsForUser(
-                            userOpt.get()
-                    );
-
-            return ResponseEntity.ok(resp);
-
-        } catch (Exception ex) {
-
-            log.error(
-                    "Failed to compute analytics",
-                    ex
+    AnalyticsResponse resp =
+            analyticsService.getAnalyticsForUser(
+                    userOpt.get()
             );
 
-            return ResponseEntity
-                    .status(500)
-                    .body("Analytics error: " + ex.getMessage());
-        }
-    }
+    return ResponseEntity.ok(resp);
+}
+
 }
