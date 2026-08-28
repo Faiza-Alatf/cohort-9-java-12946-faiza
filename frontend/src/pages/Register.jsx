@@ -203,31 +203,30 @@ navigate("/dashboard");
         }
 
         .brand-logo-wrapper span {
-          font-size: 20px;
-          font-weight: 600;
-          letter-spacing: -0.01em;
-          color: #241f4d;
-        }
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
 
-        .brand-content h1 {
-          font-family: 'Fraunces', serif;
-          font-size: 38px;
-          font-weight: 600;
-          font-style: italic;
-          line-height: 1.12;
-          margin-bottom: 18px;
-          letter-spacing: -0.01em;
-          color: #201b47;
-        }
+.brand-content h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 38px;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.12;
+  margin-bottom: 18px;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
 
-        .brand-content .subtitle {
-          color: #504a72;
-          font-size: 15.5px;
-          line-height: 1.7;
-          margin-bottom: 40px;
-          max-width: 370px;
-        }
-
+.brand-content .subtitle {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 15.5px;
+  line-height: 1.7;
+  margin-bottom: 40px;
+  max-width: 370px;
+}
         .brand-features {
           list-style: none;
           padding: 0;

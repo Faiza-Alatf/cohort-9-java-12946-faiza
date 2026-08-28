@@ -157,15 +157,15 @@ function Login() {
 }
 
 .brand-logo-wrapper span {
-  color: #fff;
+  color: #ffffff;
 }
 
 .brand-content h1 {
-  color: #fff;
+  color: #ffffff;
 }
 
 .brand-content .subtitle {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.78);
 }
 
         .auth-brand .orb-1 {
@@ -455,6 +455,7 @@ function Login() {
           color: var(--primary);
           font-weight: 600;
           background: #ffffff;
+          
           padding: 0 4px;
         }
 
