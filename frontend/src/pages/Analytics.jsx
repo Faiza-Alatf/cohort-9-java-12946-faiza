@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { Line, Bar, Doughnut } from "react-chartjs-2";
 import Chart from "chart.js/auto";
 import api from "../services/api";
-function Analytics({ refreshToken }) {
-  const navigate = useNavigate();
+function Analytics({ refreshToken, onUnauthorized }) {
+  
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -23,10 +23,8 @@ function Analytics({ refreshToken }) {
           setData(res.data);
         }
       } catch (e) {
-        if (e?.response?.status === 401) {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  navigate("/login", { replace: true });
+       if (e?.response?.status === 401) {
+  onUnauthorized();
   return;
 }
         let msg =
@@ -56,7 +54,7 @@ function Analytics({ refreshToken }) {
     return () => {
       mounted = false;
     };
-    }, [refreshToken, navigate]);
+  }, [refreshToken, onUnauthorized]);
 
   if (loading) {
     return (
