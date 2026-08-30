@@ -87,10 +87,9 @@ function Login() {
         }
 
         body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-                  background: #F7F9FB;
-          overflow: hidden;
-        }
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #F7F9FB;
+}
 
         /* ===== Animations ===== */
         @keyframes fadeInUp {
@@ -136,13 +135,12 @@ function Login() {
         }
 
         /* ===== Container ===== */
-        .auth-split {
-          display: grid;
-          grid-template-columns: 1fr 1.05fr;
-          min-height: 100vh;
-          background: #F7F9FB;
-          overflow: hidden;
-        }
+       .auth-split {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  min-height: 100vh;
+  background: #F7F9FB;
+}
 
         /* ===== LEFT PANEL - PASTEL BRAND ===== */
        .auth-brand {
