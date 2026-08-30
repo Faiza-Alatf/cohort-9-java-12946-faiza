@@ -1602,7 +1602,10 @@ function Dashboard() {
                 )}
               </>
             ) : (
-              <Analytics refreshToken={analyticsRefreshToken} />
+              <Analytics
+  refreshToken={analyticsRefreshToken}
+  onUnauthorized={handleLogout}
+/>
             )}
 
           </main>
