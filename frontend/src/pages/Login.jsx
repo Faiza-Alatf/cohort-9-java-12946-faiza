@@ -156,17 +156,6 @@ function Login() {
   color: #fff;
 }
 
-.brand-logo-wrapper span {
-  color: #ffffff;
-}
-
-.brand-content h1 {
-  color: #ffffff;
-}
-
-.brand-content .subtitle {
-  color: rgba(255, 255, 255, 0.78);
-}
 
         .auth-brand .orb-1 {
           position: absolute;
