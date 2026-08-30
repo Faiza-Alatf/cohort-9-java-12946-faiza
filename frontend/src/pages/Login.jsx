@@ -232,7 +232,7 @@ function Login() {
           font-size: 20px;
           font-weight: 600;
           letter-spacing: -0.01em;
-          color: #241f4d;
+        color: #ffffff;
         }
 
         .brand-content h1 {
@@ -243,11 +243,11 @@ function Login() {
           line-height: 1.12;
           margin-bottom: 18px;
           letter-spacing: -0.01em;
-          color: #201b47;
+          color: #ffffff;
         }
 
         .brand-content .subtitle {
-          color: #504a72;
+          color: rgba(255, 255, 255, 0.78);
           font-size: 15.5px;
           line-height: 1.7;
           margin-bottom: 40px;
