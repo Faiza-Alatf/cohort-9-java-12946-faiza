@@ -72,11 +72,10 @@ navigate("/dashboard");
           box-sizing: border-box;
         }
 
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-                  background: #F7F9FB;
-          overflow: hidden;
-        }
+       body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #F7F9FB;
+}
 
         /* ===== Animations ===== */
         @keyframes fadeInUp {
@@ -123,12 +122,11 @@ navigate("/dashboard");
 
         /* ===== Container ===== */
         .auth-split {
-          display: grid;
-          grid-template-columns: 1fr 1.05fr;
-          min-height: 100vh;
-          background: #F7F9FB;
-          overflow: hidden;
-        }
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  min-height: 100vh;
+  background: #F7F9FB;
+}
 
         /* ===== LEFT PANEL ===== */
         .auth-brand {
