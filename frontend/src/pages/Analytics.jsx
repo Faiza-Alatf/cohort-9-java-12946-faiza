@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Line, Bar, Doughnut } from "react-chartjs-2";
 import Chart from "chart.js/auto";
 import api from "../services/api";
-
-function Analytics() {
+function Analytics({ refreshToken }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -49,7 +48,7 @@ function Analytics() {
     return () => {
       mounted = false;
     };
-  }, []);
+    }, [refreshToken]);
 
   if (loading) {
     return (
