@@ -56,12 +56,16 @@ class ErrorBoundary extends Component {
             className="auth-button"
             onClick={async () => {
               try {
-                await window.navigator.clipboard?.writeText(
-                  JSON.stringify({
-                    error: this.formatError(this.state.error),
-                    stack: this.state.errorInfo?.componentStack
-                  })
-                );
+                if (!window.navigator.clipboard) {
+  throw new Error("Clipboard API is not available.");
+}
+
+await window.navigator.clipboard.writeText(
+  JSON.stringify({
+    error: this.formatError(this.state.error),
+    stack: this.state.errorInfo?.componentStack
+  })
+);
               } catch (error) {
                 console.error("Could not copy error details:", error);
               }
