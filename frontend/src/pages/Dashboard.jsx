@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Analytics from "./Analytics";
@@ -156,19 +156,19 @@ function Dashboard() {
 
   const pageSize = 6;
 
-  const clearSession = () => {
-    try {
-      localStorage.removeItem("token");
-    } catch (err) {
-      console.error("Failed to clear stored token.", err);
-    }
+ const clearSession = useCallback(() => {
+  try {
+    localStorage.removeItem("token");
+  } catch (err) {
+    console.error("Failed to clear stored token.", err);
+  }
 
-    try {
-      localStorage.removeItem("user");
-    } catch (err) {
-      console.error("Failed to clear stored user.", err);
-    }
-  };
+  try {
+    localStorage.removeItem("user");
+  } catch (err) {
+    console.error("Failed to clear stored user.", err);
+  }
+}, []);
 
   const getUserFromStorage = () => {
     try {
@@ -237,10 +237,10 @@ function Dashboard() {
     setPage(0);
   };
 
-  const handleLogout = () => {
-    clearSession();
-    navigate("/login");
-  };
+  const handleLogout = useCallback(() => {
+  clearSession();
+  navigate("/login");
+}, [clearSession, navigate]);
 
   const handleExport = async () => {
     try {
