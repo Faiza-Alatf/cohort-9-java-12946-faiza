@@ -257,14 +257,14 @@ Contact-Management-System/
 
 The backend exposes REST APIs for authentication and contact management.
 
-### Authentication
+## Authentication
 
 ```text
 POST /api/auth/register
 POST /api/auth/login
 ```
 
-### Contacts
+## Contacts
 
 ```text
 GET    /api/contacts
@@ -274,7 +274,7 @@ PUT    /api/contacts/{id}
 DELETE /api/contacts/{id}
 ```
 
-### Analytics
+## Analytics
 
 ```text
 GET /api/analytics
